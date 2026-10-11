@@ -1,23 +1,47 @@
+---
+import '@fortawesome/fontawesome-free/css/fontawesome.css';
+import '@fortawesome/fontawesome-free/css/brands.css';
+
+interface Props {
+	title?: string;
+	description?: string;
+	lang?: 'id' | 'en';
+}
+
+const {
+	title = 'Prasetya Webworks — Website yang bekerja untuk bisnis Anda',
+	description = 'Prasetya Webworks merancang website profesional, cepat, responsif, dan terarah untuk membantu bisnis tampil lebih meyakinkan.',
+	lang = 'id',
+} = Astro.props;
+---
+
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
 	<head>
-		<meta charset="utf-8" />
+		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#10131d" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="alternate" hreflang="id" href="/" />
+		<link rel="alternate" hreflang="en" href="/en/" />
+		<link rel="alternate" hreflang="x-default" href="/" />
 		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
+		<title>{title}</title>
 	</head>
-	<body>
-		<slot />
-	</body>
+	<body><slot /></body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
+<style is:global>
+	:root { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #11131a; background: #f4f1ea; font-synthesis: none; }
+	* { box-sizing: border-box; }
+	html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+	body { margin: 0; min-width: 320px; background: #f4f1ea; }
+	a { color: inherit; }
+	button, input, textarea { font: inherit; }
+	::selection { color: #fff; background: #173a9b; }
+	@media (prefers-reduced-motion: reduce) {
+		html { scroll-behavior: auto; }
+		*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 	}
 </style>
