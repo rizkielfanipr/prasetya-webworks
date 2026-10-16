@@ -1,0 +1,8 @@
+# Deployed with the site to public_html/prasetyawebworks.web.id/.
+# Routing lives in public_html/.htaccess (see deploy/public_html/.htaccess),
+# so avoid rewrite rules here.
+
+# Deploy bookkeeping file written by the CI FTP action.
+<Files ".ftp-deploy-sync-state.json">
+	Require all denied
+</Files>
