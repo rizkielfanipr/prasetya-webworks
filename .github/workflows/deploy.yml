@@ -32,10 +32,23 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         run: |
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "::error::Secret SSH_PRIVATE_KEY is missing or empty"
+            exit 1
+          fi
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          if ! ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null; then
+            echo "::error::SSH_PRIVATE_KEY is not a valid private key (copy the whole file, BEGIN to END lines)"
+            exit 1
+          fi
           echo "server.griv.co.id ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC2d7PWQgD63Asf8MmFPp7ViTz3QGWHX1b+7l8hU/XCZ" > ~/.ssh/known_hosts
-          rsync -rlz --delete --chmod=D755,F644 \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
-            dist/ prasetya@server.griv.co.id:public_html/prasetyawebworks.web.id/
+          if ! out=$(rsync -rlz --delete --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -o ConnectTimeout=30" \
+            dist/ prasetya@server.griv.co.id:public_html/prasetyawebworks.web.id/ 2>&1); then
+            echo "$out"
+            echo "::error::rsync failed: $(echo "$out" | tail -3 | tr '\n' ' ')"
+            exit 1
+          fi
+          echo "$out"
