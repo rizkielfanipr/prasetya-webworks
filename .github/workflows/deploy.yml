@@ -28,12 +28,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Upload to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ./dist/
-          server-dir: public_html/prasetyawebworks.web.id/
+      - name: Upload to cPanel via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "server.griv.co.id ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIC2d7PWQgD63Asf8MmFPp7ViTz3QGWHX1b+7l8hU/XCZ" > ~/.ssh/known_hosts
+          rsync -rlz --delete --chmod=D755,F644 \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
+            dist/ prasetya@server.griv.co.id:public_html/prasetyawebworks.web.id/

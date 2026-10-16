@@ -12,6 +12,9 @@ RedirectMatch 404 ^/preview\.prasetyawebworks\.web\.id(/|$)
 
 RewriteEngine On
 
+# AutoSSL / ACME domain validation files live in public_html/.well-known/.
+RewriteRule ^\.well-known/ - [L]
+
 # Hide the subfolder name: direct requests to /prasetyawebworks.web.id/... return 404.
 RewriteCond %{HTTP_HOST} ^(www\.)?prasetyawebworks\.web\.id$ [NC]
 RewriteCond %{THE_REQUEST} \s/prasetyawebworks\.web\.id[/?\s] [NC]
