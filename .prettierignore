@@ -1,0 +1,9 @@
+dist/
+.astro/
+node_modules/
+package-lock.json
+public/
+# Generated data: one template per line keeps diffs readable.
+src/data/templates.json
+# Documentation is prose; tables stay hand-aligned.
+*.md

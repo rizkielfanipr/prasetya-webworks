@@ -25,6 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Formatting (Prettier), lint (ESLint + Stylelint) and types (astro check). Any failure stops the deploy.
+      - name: Validate
+        run: npm run validate
+
       - name: Build
         run: npm run build
 
