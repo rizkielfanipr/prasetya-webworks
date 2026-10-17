@@ -1,10 +1,16 @@
 import catalog from './templates.json';
+import livePreviews from './live-previews.json';
 import { content, type Locale } from '../i18n/content';
 
 export type TemplateItem = (typeof catalog)[number];
 export type TemplateCategory = keyof typeof content.id.templateCategories;
 
-export const templates: TemplateItem[] = catalog;
+/** WordPress demo for a template, if its code is listed in live-previews.json. */
+export const livePreviewUrl = (item: TemplateItem) =>
+	livePreviews.includes(item.code) ? `https://preview.prasetyawebworks.web.id/template-${item.code}/` : undefined;
+
+// Templates with a live demo come first within their category, so visitors see them before screenshot-only ones.
+export const templates: TemplateItem[] = [...catalog].sort((a, b) => Number(!livePreviewUrl(a)) - Number(!livePreviewUrl(b)));
 
 /** Categories in tab order, limited to those that have at least one template. */
 export const templateCategories = (Object.keys(content.id.templateCategories) as TemplateCategory[])

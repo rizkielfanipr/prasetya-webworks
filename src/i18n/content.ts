@@ -35,7 +35,7 @@ export const content = {
 		],
 		templatesIntro: {
 			title: 'Pilihan untuk', emphasis: 'setiap cerita', description: 'Jelajahi ratusan desain berdasarkan jenis bisnis. Setiap template dapat disesuaikan dengan identitas brand Anda.',
-			filterLabel: 'Filter template berdasarkan kategori', all: 'Semua', pages: 'halaman', select: 'Pilih template',
+			filterLabel: 'Filter template berdasarkan kategori', all: 'Semua', pages: 'halaman', select: 'Pilih template', livePreview: 'Live preview', liveBadge: 'Live', livePreviewLabel: 'Buka live preview {name} di tab baru',
 			viewAll: 'Lihat semua template', viewAllCategory: 'Lihat semua template {category}',
 			thumbAlt: 'Tampilan halaman utama template {name}', request: 'Halo, saya tertarik dengan template #{code} {name}.',
 		},
@@ -108,7 +108,7 @@ export const content = {
 		],
 		templatesIntro: {
 			title: 'A direction for', emphasis: 'every story', description: 'Browse hundreds of designs by business type. Every template can be tailored to your brand identity.',
-			filterLabel: 'Filter templates by category', all: 'All', pages: 'pages', select: 'Choose template',
+			filterLabel: 'Filter templates by category', all: 'All', pages: 'pages', select: 'Choose template', livePreview: 'Live preview', liveBadge: 'Live', livePreviewLabel: 'Open the {name} live preview in a new tab',
 			viewAll: 'View all templates', viewAllCategory: 'View all {category} templates',
 			thumbAlt: 'Homepage preview of the {name} template', request: 'Hi, I’m interested in template #{code} {name}.',
 		},
