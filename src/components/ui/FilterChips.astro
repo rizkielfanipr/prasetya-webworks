@@ -1,0 +1,100 @@
+---
+/**
+ * A row of pill-shaped filters. As links (catalog: each filter is its own page) or as toggle buttons
+ * handled by page script (home preview), where `aria-pressed` marks the active one.
+ */
+interface Item {
+	label: string;
+	active: boolean;
+	/** Link target (link mode). */
+	href?: string;
+	/** Extra data-* attributes for page script (button mode), e.g. { 'data-filter': 'all' }. */
+	data?: Record<string, string>;
+}
+
+interface Props {
+	items: Item[];
+	mode: 'link' | 'button';
+	/** Accessible name of the group. */
+	label: string;
+	id?: string;
+}
+
+const { items, mode, label, id } = Astro.props;
+---
+
+{mode === 'link' ? (
+	<nav class="filter-chips" id={id} aria-label={label}>
+		{items.map((item) => (
+			<a class="filter-chip" href={item.href} aria-current={item.active ? 'page' : undefined}>
+				{item.label}
+			</a>
+		))}
+	</nav>
+) : (
+	<div class="filter-chips" id={id} role="group" aria-label={label}>
+		{items.map((item) => (
+			<button class="filter-chip" type="button" aria-pressed={item.active ? 'true' : 'false'} {...item.data}>
+				{item.label}
+			</button>
+		))}
+	</div>
+)}
+
+<style>
+	.filter-chips {
+		max-width: 1320px;
+		margin: 0 auto 2rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.5rem;
+	}
+
+	.filter-chip {
+		flex: none;
+		padding: 0.6rem 0.95rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		color: var(--ink);
+		background: rgba(255, 253, 248, 0.78);
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		font: inherit;
+		font-size: 0.68rem;
+		letter-spacing: 0.03em;
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			background 0.2s,
+			border-color 0.2s,
+			color 0.2s;
+	}
+
+	.filter-chip:hover {
+		border-color: var(--blue);
+	}
+
+	.filter-chip[aria-pressed='true'],
+	.filter-chip[aria-current] {
+		color: #fff;
+		background: var(--blue);
+		border-color: var(--blue);
+	}
+
+	.filter-chip:focus-visible {
+		outline: 3px solid var(--blue-soft);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 560px) {
+		.filter-chips {
+			gap: 0.4rem;
+		}
+		.filter-chip {
+			padding: 0.5rem 0.8rem;
+			font-size: 0.64rem;
+		}
+	}
+</style>

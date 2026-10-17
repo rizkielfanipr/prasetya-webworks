@@ -1,0 +1,180 @@
+---
+import SectionIntro from '../ui/SectionIntro.astro';
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale];
+---
+
+<section class="pricing section-pad" id="packages" aria-labelledby="pricing-title">
+	<SectionIntro
+		id="pricing-title"
+		title={t.pricingIntro.title}
+		emphasis={t.pricingIntro.emphasis}
+		description={t.pricingIntro.description}
+	/>
+	<div class="pricing-grid">
+		{t.packages.map((item) => (
+			<article class:list={['pricing-card', { featured: 'featured' in item && item.featured }]}>
+				<div>
+					<h3>{item.name}</h3>
+					<p>{item.tagline}</p>
+				</div>
+				<ul>
+					{item.features.map((feature) => (
+						<li>
+							<span aria-hidden="true">✓</span>
+							{feature}
+						</li>
+					))}
+				</ul>
+				{/* Opens PackageModal with this package's details. */}
+				<button
+					class="package-select"
+					type="button"
+					data-package-select
+					data-package-name={item.name}
+					data-package-tagline={item.tagline}
+					data-package-features={JSON.stringify(item.features)}
+				>
+					{t.pricingIntro.select} <span aria-hidden="true">↗</span>
+				</button>
+			</article>
+		))}
+	</div>
+</section>
+
+<style>
+	.pricing {
+		background:
+			radial-gradient(circle at 90% 25%, rgba(158, 179, 255, 0.38), transparent 30%),
+			linear-gradient(180deg, #e9edff 0%, #e7ebff 68%, #eeeef3 88%, var(--ivory) 100%);
+	}
+
+	.pricing-grid {
+		max-width: 1320px;
+		margin: auto;
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1rem;
+	}
+
+	.pricing-card {
+		min-height: 410px;
+		padding: 1.6rem;
+		display: flex;
+		flex-direction: column;
+		color: var(--ink);
+		background: rgba(255, 253, 248, 0.92);
+		border: 1px solid rgba(23, 58, 155, 0.18);
+		border-radius: 24px;
+		box-shadow: 0 12px 30px rgba(35, 43, 80, 0.05);
+	}
+
+	.pricing-card.featured {
+		color: #fff;
+		background: linear-gradient(155deg, #2149b8, #0b2368);
+		border-color: var(--blue);
+		box-shadow: 0 22px 45px rgba(23, 58, 155, 0.3);
+		transform: translateY(-10px);
+	}
+
+	.pricing-card h3 {
+		margin: 0 0 0.8rem;
+		font-family: var(--font-serif);
+		font-size: 1.7rem;
+		font-weight: 400;
+	}
+
+	.pricing-card p {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.78rem;
+		line-height: 1.55;
+	}
+
+	.featured p {
+		color: #dce4ff;
+	}
+
+	.pricing-card ul {
+		margin: 1.7rem 0;
+		padding: 0;
+		display: grid;
+		gap: 0.78rem;
+		list-style: none;
+		font-size: 0.73rem;
+		line-height: 1.45;
+	}
+
+	.pricing-card li {
+		display: flex;
+		gap: 0.65rem;
+	}
+
+	.pricing-card li span {
+		color: var(--blue);
+	}
+
+	.featured li span {
+		color: #fff;
+	}
+
+	.package-select {
+		width: 100%;
+		margin-top: auto;
+		padding: 0.85rem 0.95rem;
+		display: flex;
+		justify-content: space-between;
+		color: var(--blue-deep);
+		background: transparent;
+		border: 1px solid rgba(23, 58, 155, 0.45);
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 0.59rem;
+		font-weight: 700;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
+	}
+
+	.package-select:focus-visible {
+		outline: 2px solid var(--blue);
+		outline-offset: 3px;
+	}
+
+	.featured .package-select {
+		color: var(--blue-deep);
+		background: #fff;
+		border-color: #fff;
+	}
+
+	.package-select span {
+		transition: transform 0.25s ease;
+	}
+
+	.package-select:hover span {
+		transform: translate3d(3px, -2px, 0);
+	}
+
+	@media (max-width: 1000px) {
+		.pricing-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 560px) {
+		.pricing-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.package-select span {
+			animation: none !important;
+			transition: none !important;
+		}
+	}
+</style>

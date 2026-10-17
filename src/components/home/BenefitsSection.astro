@@ -1,0 +1,183 @@
+---
+import SectionIntro from '../ui/SectionIntro.astro';
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale];
+---
+
+<section class="benefits section-pad" id="why-us" aria-labelledby="benefit-title">
+	<SectionIntro
+		id="benefit-title"
+		title={t.benefitsIntro.title}
+		emphasis={t.benefitsIntro.emphasis}
+		description={t.benefitsIntro.description}
+	/>
+	<div class="benefit-grid">
+		{t.benefits.map((benefit, index) => (
+			<article class="benefit-card">
+				<div class="benefit-media">
+					<img src={benefit.image} alt="" loading={index > 1 ? 'lazy' : 'eager'} style={`object-position:${benefit.position}`} />
+				</div>
+				<div class="benefit-copy">
+					<h3>{benefit.title}</h3>
+					<p>{benefit.text}</p>
+				</div>
+			</article>
+		))}
+	</div>
+</section>
+
+<style>
+	.benefits {
+		position: relative;
+		background:
+			radial-gradient(circle at 0 4%, rgba(174, 191, 243, 0.38), transparent 30%),
+			linear-gradient(180deg, #f1f2f8 0%, #f3f2ef 24%, #f4f1ea 60%, #eef0f8 86%, #e9edff 100%);
+	}
+
+	/* Soft glows. Radial gradients instead of filter: blur(), which Safari iOS clips to a square inside the rounded content shell. */
+	.benefits::before {
+		content: '';
+		position: absolute;
+		width: 460px;
+		height: 460px;
+		top: calc(8% - 20px);
+		left: -270px;
+		background: radial-gradient(circle closest-side, var(--blue-soft) 83%, transparent);
+		opacity: 0.58;
+		pointer-events: none;
+	}
+
+	.benefits::after {
+		content: '';
+		position: absolute;
+		right: -214px;
+		bottom: calc(2% - 34px);
+		width: 488px;
+		height: 488px;
+		background: radial-gradient(circle closest-side, rgba(255, 253, 248, 0.85) 72%, transparent);
+		pointer-events: none;
+	}
+
+	.benefit-grid {
+		position: relative;
+		z-index: 1;
+		max-width: 1320px;
+		margin: auto;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.15rem;
+	}
+
+	.benefit-card {
+		min-height: 232px;
+		overflow: hidden;
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(210px, 40%) 1fr;
+		align-items: stretch;
+		background: rgba(255, 253, 248, 0.92);
+		border: 1px solid rgba(23, 58, 155, 0.15);
+		border-radius: 24px;
+		box-shadow: 0 14px 34px rgba(35, 43, 80, 0.07);
+		isolation: isolate;
+	}
+
+	.benefit-media {
+		position: relative;
+		min-width: 0;
+		overflow: hidden;
+		background: #d7e0fb;
+	}
+
+	.benefit-media::after {
+		content: '';
+		position: absolute;
+		inset: 0 -1px 0 42%;
+		background: linear-gradient(90deg, transparent 0%, rgba(255, 253, 248, 0.52) 58%, rgba(255, 253, 248, 0.98) 100%);
+		pointer-events: none;
+	}
+
+	.benefit-media img {
+		width: 100%;
+		height: 100%;
+		display: block;
+		object-fit: cover;
+		filter: saturate(0.72) contrast(0.95);
+		transform: scale(1.015);
+	}
+
+	.benefit-copy {
+		position: relative;
+		z-index: 2;
+		align-self: center;
+		margin-left: -1.1rem;
+		padding: 2rem 2rem 2rem 2.4rem;
+	}
+
+	.benefit-copy::before {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 0.55rem;
+		width: 22px;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--blue));
+		opacity: 0.55;
+		transform: translateY(-36px);
+	}
+
+	.benefit-card h3 {
+		margin: 0 0 0.7rem;
+		color: var(--ink);
+		font-family: var(--font-serif);
+		font-size: clamp(1.22rem, 1.7vw, 1.65rem);
+		font-weight: 400;
+		letter-spacing: -0.025em;
+	}
+
+	.benefit-card p {
+		margin: 0;
+		max-width: 330px;
+		color: var(--muted);
+		font-size: 0.76rem;
+		line-height: 1.65;
+	}
+
+	@media (max-width: 800px) {
+		.benefit-grid {
+			grid-template-columns: 1fr;
+		}
+		.benefit-card {
+			grid-template-columns: minmax(220px, 38%) 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.benefit-card {
+			min-height: 0;
+			grid-template-columns: 1fr;
+		}
+		.benefit-media {
+			aspect-ratio: 16 / 9;
+		}
+		.benefit-media::after {
+			inset: 46% 0 -1px;
+			background: linear-gradient(180deg, transparent 0%, rgba(255, 253, 248, 0.62) 58%, rgba(255, 253, 248, 0.98) 100%);
+		}
+		.benefit-copy {
+			margin: -1.25rem 0 0;
+			padding: 1.85rem 1.35rem 1.55rem;
+		}
+		.benefit-copy::before {
+			display: none;
+		}
+		.benefit-card h3 {
+			font-size: 1.3rem;
+		}
+	}
+</style>

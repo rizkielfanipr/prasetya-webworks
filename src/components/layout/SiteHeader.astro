@@ -1,0 +1,432 @@
+---
+import { content, type Locale } from '../../i18n/content';
+import { homePath } from '../../data/templates';
+import { site } from '../../config/site';
+
+interface Props {
+	locale: Locale;
+	/** This page in each language, for the language switcher. */
+	alternates: { id: string; en: string };
+	/** On the home page the links scroll within the page; elsewhere they lead back to home. */
+	onHome?: boolean;
+	/** Show the "Mitra" link (only while the partners section is visible). */
+	showPartners?: boolean;
+}
+
+const { locale, alternates, onHome = false, showPartners = false } = Astro.props;
+const t = content[locale];
+const base = onHome ? '' : homePath(locale);
+const links = [
+	...(showPartners ? [{ hash: '#partners', label: t.nav.about }] : []),
+	{ hash: '#why-us', label: t.nav.services },
+	{ hash: '#packages', label: t.nav.packages },
+	{ hash: '#templates', label: t.nav.work },
+	{ hash: '#faq', label: t.nav.faq },
+];
+const languages = (['id', 'en'] as Locale[]).map((code) => ({
+	label: code.toUpperCase(),
+	href: alternates[code],
+	active: code === locale,
+}));
+---
+
+<header class="site-header" data-site-header>
+	<a class="brand" href={onHome ? '#top' : homePath(locale)} aria-label={`${site.name} — ${onHome ? t.footer.back : t.catalog.home}`}>
+		<img src={site.logo} alt={site.name} width="260" height="90" />
+	</a>
+
+	<nav class="desktop-nav" aria-label="Main navigation">
+		{links.map((link) => (
+			<a href={`${base}${link.hash}`}>{link.label}</a>
+		))}
+	</nav>
+
+	<div class="header-actions">
+		<nav class="language-switcher" aria-label="Language">
+			{languages.map((language, index) => (
+				<>
+					{index > 0 && <span aria-hidden="true">/</span>}
+					<a class:list={{ active: language.active }} href={language.href} aria-current={language.active ? 'page' : undefined}>
+						{language.label}
+					</a>
+				</>
+			))}
+		</nav>
+		<a class="header-cta" href={`${base}#contact`}>
+			<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+			<span>{t.nav.consultation}</span>
+		</a>
+	</div>
+
+	<div class="mobile-actions">
+		<nav class="mobile-header-languages" aria-label="Language">
+			{languages.map((language, index) => (
+				<>
+					{index > 0 && <span aria-hidden="true">/</span>}
+					<a class:list={{ active: language.active }} href={language.href} aria-current={language.active ? 'page' : undefined}>
+						{language.label}
+					</a>
+				</>
+			))}
+		</nav>
+		<details class="mobile-nav">
+			<summary aria-label={t.nav.menu}>
+				<span class="hamburger-icon" aria-hidden="true">
+					<i></i>
+					<i></i>
+					<i></i>
+				</span>
+			</summary>
+			<div class="mobile-panel">
+				{links.map((link) => (
+					<a href={`${base}${link.hash}`}>{link.label}</a>
+				))}
+				<a href={`${base}#contact`}>
+					<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+					<span>{t.nav.consultation}</span>
+				</a>
+			</div>
+		</details>
+	</div>
+</header>
+
+<script>
+	import { onScrollFrame } from '../../scripts/motion';
+
+	const header = document.querySelector<HTMLElement>('[data-site-header]');
+	onScrollFrame(() => header?.classList.toggle('is-scrolled', window.scrollY > 24));
+
+	// Close the mobile menu once a link is chosen.
+	document
+		.querySelectorAll('.mobile-panel a')
+		.forEach((link) => link.addEventListener('click', () => link.closest('details')?.removeAttribute('open')));
+</script>
+
+<style>
+	.site-header {
+		position: fixed;
+		z-index: 30;
+		inset: 0 0 auto;
+		height: var(--header-height);
+		padding: 0 clamp(1.2rem, 4vw, 4.5rem);
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		color: #fff;
+		background: rgba(7, 7, 7, 0.84);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+		backdrop-filter: blur(16px);
+		transition:
+			height 0.3s ease,
+			background 0.3s ease,
+			border-color 0.3s ease;
+	}
+
+	.site-header.is-scrolled {
+		height: 66px;
+		background: rgba(7, 7, 9, 0.94);
+		border-bottom-color: rgba(117, 144, 255, 0.2);
+	}
+
+	.brand {
+		width: 132px;
+		height: 48px;
+		display: flex;
+		align-items: center;
+		filter: invert(1);
+	}
+
+	.brand img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		object-position: left center;
+	}
+
+	.desktop-nav {
+		display: flex;
+		gap: 2rem;
+	}
+
+	.desktop-nav a,
+	.header-cta {
+		color: inherit;
+		text-decoration: none;
+		font-size: 0.67rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.desktop-nav a {
+		opacity: 0.72;
+	}
+
+	.desktop-nav a:hover {
+		opacity: 1;
+	}
+
+	.header-actions {
+		justify-self: end;
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+	}
+
+	.language-switcher,
+	.mobile-header-languages {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 999px;
+	}
+
+	.language-switcher {
+		padding: 0.34rem 0.48rem;
+		color: rgba(255, 255, 255, 0.52);
+		font-size: 0.61rem;
+	}
+
+	.mobile-header-languages {
+		padding: 0.34rem 0.5rem;
+		color: rgba(255, 255, 255, 0.5);
+		font-size: 0.6rem;
+	}
+
+	.language-switcher a,
+	.mobile-header-languages a {
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.language-switcher a:hover,
+	.language-switcher .active,
+	.mobile-header-languages a:hover,
+	.mobile-header-languages .active {
+		color: #fff;
+	}
+
+	.language-switcher .active,
+	.mobile-header-languages .active {
+		font-weight: 700;
+	}
+
+	.header-cta {
+		padding: 0.7rem 1.05rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.52rem;
+		color: #fff;
+		background: var(--blue);
+		border: 1px solid var(--blue);
+		border-radius: 999px;
+		transition:
+			background 0.2s,
+			border-color 0.2s,
+			transform 0.2s;
+	}
+
+	.header-cta:hover {
+		background: var(--blue-hover);
+		border-color: var(--blue-hover);
+		transform: translateY(-1px);
+	}
+
+	.header-cta i {
+		font-size: 0.98rem;
+		line-height: 1;
+	}
+
+	.mobile-actions {
+		display: none;
+		justify-self: end;
+		align-items: center;
+		gap: 0.55rem;
+	}
+
+	.mobile-nav {
+		display: none;
+		position: relative;
+	}
+
+	.mobile-nav summary {
+		width: 38px;
+		height: 38px;
+		display: grid;
+		place-items: center;
+		list-style: none;
+		cursor: pointer;
+		color: #fff;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 50%;
+		transition:
+			background 0.2s,
+			border-color 0.2s;
+	}
+
+	.mobile-nav summary:hover {
+		background: rgba(117, 144, 255, 0.16);
+		border-color: rgba(117, 144, 255, 0.45);
+	}
+
+	.mobile-nav summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.mobile-nav[open] summary {
+		background: var(--blue);
+		border-color: var(--blue);
+	}
+
+	.hamburger-icon {
+		width: 16px;
+		height: 12px;
+		position: relative;
+		display: block;
+	}
+
+	.hamburger-icon i {
+		position: absolute;
+		left: 0;
+		width: 100%;
+		height: 1.5px;
+		background: currentColor;
+		border-radius: 999px;
+		transition:
+			transform 0.25s ease,
+			opacity 0.2s ease,
+			top 0.25s ease;
+	}
+
+	.hamburger-icon i:nth-child(1) {
+		top: 0;
+	}
+	.hamburger-icon i:nth-child(2) {
+		top: 5px;
+	}
+	.hamburger-icon i:nth-child(3) {
+		top: 10px;
+	}
+	.mobile-nav[open] .hamburger-icon i:nth-child(1) {
+		top: 5px;
+		transform: rotate(45deg);
+	}
+	.mobile-nav[open] .hamburger-icon i:nth-child(2) {
+		opacity: 0;
+	}
+	.mobile-nav[open] .hamburger-icon i:nth-child(3) {
+		top: 5px;
+		transform: rotate(-45deg);
+	}
+
+	.mobile-panel {
+		position: absolute;
+		top: calc(100% + 0.7rem);
+		right: 0;
+		width: min(290px, calc(100vw - 2rem));
+		padding: 0.75rem;
+		display: grid;
+		gap: 0.2rem;
+		color: #fff;
+		background: rgba(12, 15, 27, 0.97);
+		border: 1px solid rgba(117, 144, 255, 0.22);
+		border-radius: 20px;
+		box-shadow: 0 22px 60px rgba(2, 5, 15, 0.38);
+		backdrop-filter: blur(18px);
+		animation: mobile-menu-in 0.22s ease both;
+	}
+
+	.mobile-panel a {
+		padding: 0.85rem 0.9rem;
+		color: rgba(255, 255, 255, 0.78);
+		text-decoration: none;
+		border-radius: 12px;
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		transition:
+			background 0.2s,
+			color 0.2s,
+			transform 0.2s;
+	}
+
+	.mobile-panel a:hover {
+		color: #fff;
+		background: rgba(117, 144, 255, 0.12);
+		transform: translateX(3px);
+	}
+
+	/* Last item is the consultation call to action. */
+	.mobile-panel > a:last-of-type {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.55rem;
+		color: #fff;
+		background: var(--blue);
+		font-weight: 700;
+	}
+
+	.mobile-panel > a:last-of-type i {
+		font-size: 1rem;
+		line-height: 1;
+	}
+
+	.mobile-panel > a:last-of-type:hover {
+		background: var(--blue-hover);
+	}
+
+	.mobile-nav summary:focus-visible,
+	.mobile-panel a:focus-visible,
+	.mobile-header-languages a:focus-visible {
+		outline: 2px solid #9eb3ff;
+		outline-offset: 2px;
+	}
+
+	@keyframes mobile-menu-in {
+		from {
+			opacity: 0;
+			transform: translate3d(0, -8px, 0) scale(0.98);
+		}
+		to {
+			opacity: 1;
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+	}
+
+	@media (max-width: 800px) {
+		.site-header {
+			grid-template-columns: 1fr auto;
+		}
+		.desktop-nav,
+		.header-actions {
+			display: none;
+		}
+		.mobile-actions {
+			display: flex;
+		}
+		.mobile-nav {
+			display: block;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.brand {
+			width: 115px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.site-header {
+			animation: none !important;
+			transition: none !important;
+		}
+		.mobile-panel {
+			animation: none;
+		}
+		.hamburger-icon i {
+			transition: none;
+		}
+	}
+</style>

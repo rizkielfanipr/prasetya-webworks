@@ -1,0 +1,376 @@
+---
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const { modal: t, status } = content[Astro.props.locale];
+---
+
+<dialog class="package-modal" id="package-modal" aria-labelledby="package-modal-title">
+	<div class="package-modal-shell">
+		<button class="modal-close" type="button" data-modal-close aria-label={t.close}>
+			×
+		</button>
+		<section class="package-summary" aria-label={t.detail}>
+			<h2 id="package-modal-title" data-modal-package-name>
+				Essential
+			</h2>
+			<p class="package-summary-copy" data-modal-package-tagline></p>
+			<div class="summary-divider"></div>
+			<p class="summary-title">{t.included}</p>
+			<ul data-modal-package-features></ul>
+			<p class="summary-note">{t.note}</p>
+		</section>
+		<form
+			class="package-order-form"
+			id="package-order-form"
+			data-subject={status.packageSubject}
+			data-package-label={status.package}
+			data-name-label={status.name}
+			data-business-label={status.business}
+			data-needs-label={status.needs}
+			data-sent-status={status.email}
+		>
+			<h2>{t.title}</h2>
+			<p>{t.description}</p>
+			<input type="hidden" name="package" data-package-input />
+			<div class="field-row">
+				<label>
+					{t.name}
+					<input name="name" type="text" placeholder={t.namePlaceholder} required />
+				</label>
+				<label>
+					{t.whatsapp}
+					<input name="whatsapp" type="tel" placeholder="08xxxxxxxxxx" required />
+				</label>
+			</div>
+			<label>
+				{t.email}
+				<input name="email" type="email" placeholder="nama@email.com" required />
+			</label>
+			<label>
+				{t.business} <span>{t.optional}</span>
+				<input name="business" type="text" placeholder={t.businessPlaceholder} />
+			</label>
+			<label>
+				{t.needs}
+				<textarea name="message" rows="4" placeholder={t.needsPlaceholder} required></textarea>
+			</label>
+			<button class="order-submit" type="submit">
+				{t.submit} <span aria-hidden="true">↗</span>
+			</button>
+			<p class="order-status" role="status" aria-live="polite"></p>
+		</form>
+	</div>
+</dialog>
+
+<script>
+	import { openMailto } from '../../scripts/mailto';
+
+	const modal = document.querySelector<HTMLDialogElement>('#package-modal');
+	const form = document.querySelector<HTMLFormElement>('#package-order-form');
+	const name = modal?.querySelector<HTMLElement>('[data-modal-package-name]');
+	const tagline = modal?.querySelector<HTMLElement>('[data-modal-package-tagline]');
+	const features = modal?.querySelector<HTMLUListElement>('[data-modal-package-features]');
+	const packageInput = modal?.querySelector<HTMLInputElement>('[data-package-input]');
+
+	// "Choose package" buttons in PricingSection carry the package details as data attributes.
+	document.querySelectorAll<HTMLButtonElement>('[data-package-select]').forEach((button) =>
+		button.addEventListener('click', () => {
+			const selected = button.dataset;
+			if (name) name.textContent = selected.packageName ?? '';
+			if (tagline) tagline.textContent = selected.packageTagline ?? '';
+			if (packageInput) packageInput.value = selected.packageName ?? '';
+			features?.replaceChildren(
+				...(JSON.parse(selected.packageFeatures ?? '[]') as string[]).map((feature) => {
+					const item = document.createElement('li');
+					const check = document.createElement('span');
+					check.setAttribute('aria-hidden', 'true');
+					check.textContent = '✓';
+					item.append(check, feature);
+					return item;
+				}),
+			);
+			modal?.showModal();
+		}),
+	);
+
+	modal?.querySelector('[data-modal-close]')?.addEventListener('click', () => modal.close());
+	modal?.addEventListener('click', (event) => {
+		if (event.target === modal) modal.close();
+	});
+
+	form?.addEventListener('submit', (event) => {
+		event.preventDefault();
+		const data = new FormData(form);
+		const label = form.dataset;
+		openMailto(
+			`${label.subject} ${data.get('package') ?? ''}`,
+			`${label.packageLabel}: ${data.get('package')}\n${label.nameLabel}: ${data.get('name')}\nWhatsApp: ${data.get('whatsapp')}\nEmail: ${data.get('email')}\n${label.businessLabel}: ${data.get('business') || '-'}\n\n${label.needsLabel}:\n${data.get('message')}`,
+		);
+		const status = form.querySelector<HTMLElement>('.order-status');
+		if (status) status.textContent = label.sentStatus ?? '';
+	});
+</script>
+
+<style>
+	.package-modal {
+		width: min(1080px, calc(100% - 2rem));
+		max-height: calc(100dvh - 2rem);
+		padding: 0;
+		overflow: auto;
+		color: var(--ink);
+		background: transparent;
+		border: 0;
+		border-radius: 28px;
+		box-shadow: 0 32px 90px rgba(8, 15, 45, 0.3);
+	}
+
+	.package-modal::backdrop {
+		background: rgba(7, 10, 24, 0.76);
+		backdrop-filter: blur(9px);
+	}
+
+	.package-modal-shell {
+		position: relative;
+		min-height: 610px;
+		display: grid;
+		grid-template-columns: 0.88fr 1.12fr;
+		overflow: hidden;
+		background: var(--paper);
+		border: 1px solid rgba(255, 255, 255, 0.35);
+		border-radius: 28px;
+	}
+
+	.modal-close {
+		position: absolute;
+		z-index: 5;
+		top: 1rem;
+		right: 1rem;
+		width: 38px;
+		height: 38px;
+		display: grid;
+		place-items: center;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.82);
+		border: 1px solid rgba(17, 19, 26, 0.12);
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 1.25rem;
+		line-height: 1;
+		backdrop-filter: blur(8px);
+	}
+
+	.modal-close:focus-visible {
+		outline: 2px solid var(--blue);
+		outline-offset: 2px;
+	}
+
+	.package-summary {
+		padding: clamp(2.2rem, 4vw, 4rem);
+		color: #fff;
+		background:
+			radial-gradient(circle at 12% 82%, rgba(122, 145, 220, 0.34), transparent 34%),
+			linear-gradient(150deg, #2149b8 0%, #0b2368 70%, #07163f 100%);
+	}
+
+	.package-summary h2,
+	.package-order-form h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-weight: 400;
+		letter-spacing: -0.04em;
+	}
+
+	.package-summary h2 {
+		font-size: clamp(2.6rem, 5vw, 4.8rem);
+	}
+
+	.package-summary-copy {
+		max-width: 400px;
+		margin: 1rem 0 0;
+		color: #dce4ff;
+		font-size: 0.84rem;
+		line-height: 1.65;
+	}
+
+	.summary-divider {
+		height: 1px;
+		margin: 2.4rem 0 1.7rem;
+		background: rgba(255, 255, 255, 0.24);
+	}
+
+	.summary-title {
+		margin: 0 0 1rem;
+		color: #dce4ff;
+		font-size: 0.78rem;
+		font-weight: 600;
+		line-height: 1.5;
+	}
+
+	.package-summary ul {
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.95rem;
+		list-style: none;
+		font-size: 0.77rem;
+	}
+
+	.package-summary li {
+		display: flex;
+		gap: 0.75rem;
+		align-items: flex-start;
+	}
+
+	.package-summary li span {
+		width: 19px;
+		height: 19px;
+		display: grid;
+		place-items: center;
+		flex: 0 0 19px;
+		color: var(--blue-deep);
+		background: #fff;
+		border-radius: 50%;
+		font-size: 0.58rem;
+	}
+
+	.summary-note {
+		margin: 2.5rem 0 0;
+		padding-top: 1.4rem;
+		color: #aebfff;
+		border-top: 1px solid rgba(255, 255, 255, 0.18);
+		font-size: 0.65rem;
+		line-height: 1.6;
+	}
+
+	.package-order-form {
+		padding: clamp(2.3rem, 4vw, 4rem);
+		display: flex;
+		flex-direction: column;
+		background: linear-gradient(145deg, #fffdf8, #f5f3ed);
+	}
+
+	.package-order-form h2 {
+		padding-right: 2rem;
+		font-size: clamp(2rem, 3vw, 3.1rem);
+		line-height: 1;
+	}
+
+	.package-order-form > p:not(.order-status) {
+		max-width: 500px;
+		margin: 0.9rem 0 1.8rem;
+		color: var(--muted);
+		font-size: 0.76rem;
+		line-height: 1.6;
+	}
+
+	.package-order-form label {
+		margin-bottom: 0.85rem;
+		display: grid;
+		gap: 0.42rem;
+		color: var(--ink);
+		font-size: 0.61rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+	}
+
+	.package-order-form label > span {
+		color: var(--muted);
+		font-weight: 400;
+	}
+
+	.package-order-form input,
+	.package-order-form textarea {
+		width: 100%;
+		padding: 0.8rem 0.85rem;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.75);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		outline: none;
+		font-size: 0.76rem;
+	}
+
+	.package-order-form input:focus,
+	.package-order-form textarea:focus {
+		border-color: var(--blue);
+		box-shadow: 0 0 0 2px rgba(23, 58, 155, 0.14);
+	}
+
+	.order-submit {
+		margin-top: 0.2rem;
+		padding: 0.9rem 1.05rem;
+		display: flex;
+		justify-content: space-between;
+		color: #fff;
+		background: var(--blue);
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 0.59rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.order-submit:focus-visible {
+		outline: 2px solid var(--blue-deep);
+		outline-offset: 3px;
+	}
+
+	.order-submit span {
+		transition: transform 0.25s ease;
+	}
+
+	.order-submit:hover span {
+		transform: translate3d(3px, -2px, 0);
+	}
+
+	.order-status {
+		min-height: 1rem;
+		margin: 0.65rem 0 0;
+		color: var(--muted);
+		font-size: 0.65rem;
+	}
+
+	@media (max-width: 1000px) {
+		.package-modal-shell {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.package-modal {
+			width: calc(100% - 1rem);
+			max-height: calc(100dvh - 1rem);
+			border-radius: 20px;
+		}
+		.package-modal-shell {
+			border-radius: 20px;
+		}
+		.package-summary,
+		.package-order-form {
+			padding: 2rem 1.25rem;
+		}
+		.package-summary h2 {
+			font-size: 2.7rem;
+		}
+		.package-order-form h2 {
+			font-size: 2rem;
+		}
+		.modal-close {
+			top: 0.7rem;
+			right: 0.7rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.order-submit span {
+			animation: none !important;
+			transition: none !important;
+		}
+	}
+</style>

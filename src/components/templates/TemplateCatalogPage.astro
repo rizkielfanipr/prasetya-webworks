@@ -1,0 +1,227 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../layout/SiteHeader.astro';
+import SiteFooter from '../layout/SiteFooter.astro';
+import FilterChips from '../ui/FilterChips.astro';
+import Pagination from '../ui/Pagination.astro';
+import TemplateCard from './TemplateCard.astro';
+import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
+import {
+	CATALOG_PAGE_SIZE,
+	catalogItems,
+	catalogPageCount,
+	catalogPath,
+	homePath,
+	templateCategories,
+	templateRequestPath,
+	type TemplateCategory,
+} from '../../data/templates';
+
+interface Props {
+	locale: Locale;
+	category?: TemplateCategory;
+	/** 1-based page number. */
+	page?: number;
+}
+
+const { locale, category, page = 1 } = Astro.props;
+const t = content[locale];
+const c = t.catalog;
+const home = homePath(locale);
+const totalPages = catalogPageCount(category);
+const items = catalogItems(category).slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE);
+const categoryLabel = category ? t.templateCategories[category] : undefined;
+const catalogTitle = `${c.title} ${c.emphasis}`;
+const pageTitle = `${categoryLabel ? c.metaTitleCategory.replace('{category}', categoryLabel) : c.metaTitle}${page > 1 ? ` — ${c.pageLabel.replace('{page}', String(page))}` : ''} — ${site.name}`;
+const alternates = { id: catalogPath('id', category, page), en: catalogPath('en', category, page) };
+const filters = [
+	{ href: catalogPath(locale), label: t.templatesIntro.all, active: !category },
+	...templateCategories.map((key) => ({ href: catalogPath(locale, key), label: t.templateCategories[key], active: key === category })),
+];
+---
+
+<Layout lang={locale} title={pageTitle} description={c.description} alternates={alternates}>
+	<SiteHeader locale={locale} alternates={alternates} />
+
+	<main class="catalog" id="top">
+		<nav class="breadcrumb" aria-label={c.breadcrumb}>
+			<a href={home}>{c.home}</a>
+			<span aria-hidden="true">/</span>
+			{category ? (
+				<>
+					<a href={catalogPath(locale)}>{catalogTitle}</a>
+					<span aria-hidden="true">/</span>
+					<span aria-current="page">{categoryLabel}</span>
+				</>
+			) : (
+				<span aria-current="page">{catalogTitle}</span>
+			)}
+		</nav>
+
+		<div class="catalog-intro">
+			{category ? (
+				<h1>
+					<em>{categoryLabel}</em>
+				</h1>
+			) : (
+				<h1>
+					{c.title} <em>{c.emphasis}</em>
+				</h1>
+			)}
+			<p>{c.description}</p>
+		</div>
+
+		{/* Pagination links jump back to #catalog-list. */}
+		<FilterChips mode="link" id="catalog-list" label={t.templatesIntro.filterLabel} items={filters} />
+
+		<div class="catalog-grid">
+			{items.map((item) => (
+				<TemplateCard item={item} locale={locale} href={templateRequestPath(locale, item)} />
+			))}
+		</div>
+
+		<Pagination
+			current={page}
+			total={totalPages}
+			hrefFor={(n: number) => `${catalogPath(locale, category, n)}#catalog-list`}
+			labels={{ nav: c.pagination, previous: c.previous, next: c.next, pageOf: c.pageOf }}
+		/>
+
+		<section class="catalog-cta" aria-labelledby="catalog-cta-title">
+			<h2 id="catalog-cta-title">{c.ctaTitle}</h2>
+			<p>{c.ctaText}</p>
+			<a href={`${home}#contact`}>
+				{t.hero.primary} <span aria-hidden="true">↗</span>
+			</a>
+		</section>
+	</main>
+
+	<SiteFooter locale={locale} home={home} />
+</Layout>
+
+<style>
+	.catalog {
+		max-width: 1320px;
+		margin: auto;
+		/* The site header is fixed, so start the content below it. */
+		padding: calc(var(--header-height) + 2.2rem) clamp(1.25rem, 4vw, 2rem) 5rem;
+	}
+
+	.breadcrumb {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		color: var(--muted);
+		font-size: 0.66rem;
+		letter-spacing: 0.06em;
+	}
+
+	.breadcrumb a {
+		color: var(--blue);
+		text-decoration: none;
+	}
+
+	.breadcrumb a:hover {
+		text-decoration: underline;
+	}
+
+	.breadcrumb [aria-current] {
+		color: var(--ink);
+	}
+
+	.catalog-intro {
+		max-width: 720px;
+		margin: 3rem auto 2.4rem;
+		text-align: center;
+	}
+
+	.catalog-intro h1 {
+		margin: 0;
+		color: var(--ink);
+		font-family: var(--font-serif);
+		font-size: clamp(2.2rem, 5vw, 3.6rem);
+		font-weight: 400;
+		letter-spacing: -0.04em;
+		line-height: 1;
+	}
+
+	.catalog-intro em {
+		color: var(--blue);
+	}
+
+	.catalog-intro p {
+		margin: 1rem auto 0;
+		color: var(--muted);
+		font-size: 0.85rem;
+		line-height: 1.6;
+	}
+
+	.catalog-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.3rem;
+	}
+
+	.catalog-cta {
+		margin-top: 4rem;
+		padding: clamp(2rem, 5vw, 3.2rem);
+		color: #fff;
+		background: linear-gradient(135deg, #10131d, var(--blue-deep));
+		border-radius: 28px;
+		text-align: center;
+	}
+
+	.catalog-cta h2 {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: clamp(1.6rem, 3vw, 2.2rem);
+		font-weight: 400;
+	}
+
+	.catalog-cta p {
+		max-width: 520px;
+		margin: 0.8rem auto 1.6rem;
+		color: #c5cbe0;
+		font-size: 0.8rem;
+		line-height: 1.6;
+	}
+
+	.catalog-cta a {
+		padding: 0.95rem 1.4rem;
+		display: inline-flex;
+		gap: 1rem;
+		color: var(--ink);
+		background: #fff;
+		border-radius: 999px;
+		font-size: 0.66rem;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.catalog-cta a:hover {
+		background: var(--blue-soft);
+	}
+
+	.catalog-cta a:focus-visible,
+	.breadcrumb a:focus-visible {
+		outline: 3px solid var(--blue-soft);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 1000px) {
+		.catalog-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 560px) {
+		.catalog-grid {
+			grid-template-columns: 1fr;
+		}
+		.catalog-intro {
+			margin-top: 2rem;
+		}
+	}
+</style>

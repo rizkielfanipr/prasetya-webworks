@@ -1,0 +1,223 @@
+---
+import TestimonialsPanel from './TestimonialsPanel.astro';
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const { contact: t, status, templatesIntro } = content[locale];
+---
+
+<section class="contact section-pad" id="contact" aria-labelledby="contact-title">
+	<form
+		class="contact-form"
+		id="contact-form"
+		data-subject={status.consultationSubject}
+		data-name-label={status.name}
+		data-topic-label={status.topic}
+		data-sent-status={status.email}
+		data-template-request={templatesIntro.request}
+	>
+		<h2 id="contact-title">{t.title}</h2>
+		<p>{t.description}</p>
+		<div class="field-row">
+			<label>
+				{t.name}
+				<input name="name" type="text" placeholder={t.namePlaceholder} required />
+			</label>
+			<label>
+				{t.email}
+				<input name="email" type="email" placeholder="nama@email.com" required />
+			</label>
+		</div>
+		<label>
+			{t.topic}
+			<select name="topic" required>
+				<option value="">{t.topicPlaceholder}</option>
+				{t.topics.map((topic) => (
+					<option>{topic}</option>
+				))}
+			</select>
+		</label>
+		<label>
+			{t.message}
+			<textarea name="message" rows="5" placeholder={t.messagePlaceholder} required></textarea>
+		</label>
+		<button type="submit">
+			{t.submit} <span aria-hidden="true">↗</span>
+		</button>
+		<p class="form-status" role="status" aria-live="polite"></p>
+	</form>
+	<TestimonialsPanel locale={locale} />
+</section>
+
+<script>
+	import { openMailto } from '../../scripts/mailto';
+	import { prefillContactMessage } from '../../scripts/contact';
+
+	const form = document.querySelector<HTMLFormElement>('#contact-form');
+
+	form?.addEventListener('submit', (event) => {
+		event.preventDefault();
+		const data = new FormData(form);
+		const label = form.dataset;
+		openMailto(
+			`${label.subject} — ${data.get('topic') ?? ''}`,
+			`${label.nameLabel}: ${data.get('name')}\nEmail: ${data.get('email')}\n${label.topicLabel}: ${data.get('topic')}\n\n${data.get('message')}`,
+		);
+		const status = form.querySelector<HTMLElement>('.form-status');
+		if (status) status.textContent = label.sentStatus ?? '';
+	});
+
+	// Visitors arriving from the template catalog (/?template=0001&name=…#contact) get the message pre-filled.
+	const params = new URLSearchParams(window.location.search);
+	const code = params.get('template') ?? '';
+	if (form && /^\d{4}$/.test(code)) {
+		const name = (params.get('name') ?? '').slice(0, 60);
+		const message = (form.dataset.templateRequest ?? '').replace('{code}', code).replace('{name}', name).replace(/\s+\./, '.');
+		prefillContactMessage(message, { scroll: false });
+		window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`);
+	}
+</script>
+
+<style>
+	.contact {
+		max-width: 1500px;
+		margin: auto;
+		padding-inline: clamp(1.25rem, 4vw, 4.5rem);
+		display: grid;
+		grid-template-columns: minmax(340px, 0.78fr) minmax(0, 1.35fr);
+		gap: clamp(2rem, 4vw, 4.5rem);
+		align-items: center;
+		background:
+			radial-gradient(circle at 78% 42%, rgba(215, 224, 251, 0.45), transparent 36%),
+			linear-gradient(180deg, var(--ivory) 0%, #f8f5ef 70%, #ece9e2 100%);
+	}
+
+	.contact-form {
+		padding: clamp(1.5rem, 2.6vw, 2.5rem);
+		background: rgba(255, 253, 248, 0.68);
+		border: 1px solid rgba(23, 58, 155, 0.16);
+		border-radius: 26px;
+	}
+
+	.contact-form h2 {
+		margin: 0;
+		color: var(--ink);
+		font-family: var(--font-serif);
+		font-size: clamp(2.25rem, 3.2vw, 3.65rem);
+		font-weight: 400;
+		letter-spacing: -0.045em;
+		line-height: 0.98;
+	}
+
+	.contact-form > p:not(.form-status) {
+		max-width: 510px;
+		margin: 1rem 0 1.8rem;
+		color: var(--muted);
+		font-size: 0.78rem;
+		line-height: 1.65;
+	}
+
+	.contact-form label {
+		margin-bottom: 0.8rem;
+		display: grid;
+		gap: 0.42rem;
+		font-size: 0.61rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+	}
+
+	.contact-form input,
+	.contact-form select,
+	.contact-form textarea {
+		width: 100%;
+		padding: 0.86rem 0.9rem;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.72);
+		border: 1px solid rgba(17, 19, 26, 0.14);
+		border-radius: 14px;
+		outline: none;
+		font-size: 0.76rem;
+		transition:
+			border-color 0.2s,
+			box-shadow 0.2s,
+			background 0.2s;
+	}
+
+	.contact-form input:focus,
+	.contact-form select:focus,
+	.contact-form textarea:focus {
+		background: #fff;
+		border-color: var(--blue);
+		box-shadow: 0 0 0 3px rgba(23, 58, 155, 0.11);
+	}
+
+	.contact-form button {
+		width: 100%;
+		padding: 0.95rem 1.1rem;
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		color: #fff;
+		background: linear-gradient(100deg, var(--blue), var(--blue-deep));
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+		font-size: 0.6rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		transition:
+			filter 0.2s,
+			transform 0.2s;
+	}
+
+	.contact-form button:hover {
+		filter: brightness(1.08);
+		transform: translateY(-1px);
+	}
+
+	.contact-form button span {
+		transition: transform 0.25s ease;
+	}
+
+	.contact-form button:hover span {
+		transform: translate3d(3px, -2px, 0);
+	}
+
+	.form-status {
+		min-height: 1rem;
+		margin: 0.65rem 0 0;
+		color: var(--muted);
+		font-size: 0.66rem;
+	}
+
+	@media (max-width: 1000px) {
+		.contact {
+			grid-template-columns: 1fr;
+		}
+		.contact-form {
+			max-width: 680px;
+			margin: auto;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.contact {
+			padding-inline: 1.1rem;
+		}
+		.contact-form h2 {
+			font-size: 2.45rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.contact-form button span {
+			animation: none !important;
+			transition: none !important;
+		}
+	}
+</style>

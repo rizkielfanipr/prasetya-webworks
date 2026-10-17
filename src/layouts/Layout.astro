@@ -1,13 +1,15 @@
 ---
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
-import WhatsAppFloat from '../components/WhatsAppFloat.astro';
-import { content } from '../i18n/content';
+import '../styles/global.css';
+import WhatsAppFloat from '../components/layout/WhatsAppFloat.astro';
+import { content, type Locale } from '../i18n/content';
+import { homePath } from '../data/templates';
 
 interface Props {
 	title?: string;
 	description?: string;
-	lang?: 'id' | 'en';
+	lang?: Locale;
 	/** Paths of this page in each language, for hreflang links. */
 	alternates?: { id: string; en: string };
 }
@@ -18,9 +20,6 @@ const {
 	lang = 'id',
 	alternates = { id: '/', en: '/en/' },
 } = Astro.props;
-
-// Every page gets the floating consultation button, pointing at the home contact form.
-const consultationHref = `${lang === 'id' ? '/' : '/en/'}#contact`;
 ---
 
 <!doctype html>
@@ -41,21 +40,7 @@ const consultationHref = `${lang === 'id' ? '/' : '/en/'}#contact`;
 	</head>
 	<body>
 		<slot />
-		<WhatsAppFloat href={consultationHref} label={content[lang].nav.consultation} />
+		{/* Every page gets the floating consultation button, pointing at the home contact form. */}
+		<WhatsAppFloat href={`${homePath(lang)}#contact`} label={content[lang].nav.consultation} />
 	</body>
 </html>
-
-<style is:global>
-	:root { --ink:#11131a; --ivory:#f4f1ea; --paper:#fffdf8; --blue:#173a9b; --blue-deep:#0b2368; --blue-soft:#d7e0fb; --muted:#6f7180; --line:#d9d5cc; }
-	:root { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #11131a; background: #f4f1ea; font-synthesis: none; }
-	* { box-sizing: border-box; }
-	html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
-	body { margin: 0; min-width: 320px; background: #f4f1ea; }
-	a { color: inherit; }
-	button, input, textarea { font: inherit; }
-	::selection { color: #fff; background: #173a9b; }
-	@media (prefers-reduced-motion: reduce) {
-		html { scroll-behavior: auto; }
-		*, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-	}
-</style>

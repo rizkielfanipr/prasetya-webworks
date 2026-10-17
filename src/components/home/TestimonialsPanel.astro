@@ -1,0 +1,302 @@
+---
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const { testimonialsIntro: t, testimonials } = content[Astro.props.locale];
+// Two marquees scrolling in opposite directions; the second starts from the end of the list.
+const rows = [
+	{ direction: 'left', items: testimonials, avatarOffset: 0 },
+	{ direction: 'right', items: [...testimonials].reverse(), avatarOffset: 1 },
+];
+---
+
+<section class="testimonial-panel" aria-labelledby="testimonials-title">
+	<div class="testimonial-heading">
+		<h2 id="testimonials-title">
+			{t.title} <em>{t.emphasis}</em>
+		</h2>
+		<p>{t.description}</p>
+	</div>
+	<div class="testimonial-marquees" aria-label={t.aria}>
+		{rows.map((row) => (
+			<div class:list={['testimonial-marquee', `testimonial-marquee-${row.direction}`]}>
+				<div class="testimonial-track">
+					{/* Each row is rendered twice for a seamless loop; the copy is hidden from assistive tech. */}
+					{[false, true].map((copy) => (
+						<div class="testimonial-group" aria-hidden={copy ? 'true' : undefined}>
+							{row.items.map((testimonial, index) => (
+								<article class="testimonial-card">
+									<header>
+										<span
+											class:list={['client-avatar', `avatar-${((index + row.avatarOffset) % 3) + 1}`]}
+											aria-hidden={copy ? undefined : 'true'}
+										></span>
+										<div>
+											<strong>{testimonial.name}</strong>
+											<p>{testimonial.role}</p>
+										</div>
+									</header>
+									<div class="stars" role={copy ? undefined : 'img'} aria-label={copy ? undefined : t.rating}>
+										<span aria-hidden={copy ? undefined : 'true'}>★★★★★</span>
+									</div>
+									<blockquote>“{testimonial.quote}”</blockquote>
+								</article>
+							))}
+						</div>
+					))}
+				</div>
+			</div>
+		))}
+	</div>
+	<p class="testimonial-note">{t.note}</p>
+</section>
+
+<style>
+	.testimonial-panel {
+		min-width: 0;
+		padding-block: 1rem;
+		overflow: hidden;
+	}
+
+	.testimonial-heading {
+		max-width: 700px;
+		margin: 0 auto 1.7rem;
+		padding-inline: clamp(1rem, 2vw, 2rem);
+		text-align: center;
+	}
+
+	.testimonial-heading h2 {
+		margin: 0;
+		color: var(--ink);
+		font-family: var(--font-serif);
+		font-size: clamp(2rem, 3.1vw, 3.35rem);
+		font-weight: 400;
+		letter-spacing: -0.045em;
+		line-height: 0.98;
+	}
+
+	.testimonial-heading h2 em {
+		color: var(--blue);
+		font-weight: 400;
+	}
+
+	.testimonial-heading p {
+		max-width: 580px;
+		margin: 0.75rem auto 0;
+		color: var(--muted);
+		font-size: 0.72rem;
+		line-height: 1.55;
+	}
+
+	.testimonial-marquees {
+		position: relative;
+		display: grid;
+		gap: 0.85rem;
+		isolation: isolate;
+	}
+
+	/* Fade both edges into the background. */
+	.testimonial-marquees::before,
+	.testimonial-marquees::after {
+		content: '';
+		position: absolute;
+		z-index: 4;
+		top: -2px;
+		bottom: -2px;
+		width: clamp(48px, 8vw, 120px);
+		pointer-events: none;
+	}
+
+	.testimonial-marquees::before {
+		left: -1px;
+		background: linear-gradient(90deg, #f7f4ee 10%, rgba(247, 244, 238, 0.88) 35%, transparent 100%);
+	}
+
+	.testimonial-marquees::after {
+		right: -1px;
+		background: linear-gradient(270deg, #f7f4ee 10%, rgba(247, 244, 238, 0.88) 35%, transparent 100%);
+	}
+
+	.testimonial-marquee {
+		width: 100%;
+		overflow: hidden;
+	}
+
+	.testimonial-track {
+		width: max-content;
+		display: flex;
+		animation: testimonial-left 46s linear infinite;
+		will-change: transform;
+	}
+
+	.testimonial-marquee-right .testimonial-track {
+		animation-name: testimonial-right;
+		animation-duration: 52s;
+	}
+
+	.testimonial-marquees:hover .testimonial-track,
+	.testimonial-marquees:focus-within .testimonial-track {
+		animation-play-state: paused;
+	}
+
+	.testimonial-group {
+		display: flex;
+		flex-shrink: 0;
+		gap: 0.85rem;
+		padding-right: 0.85rem;
+	}
+
+	.testimonial-card {
+		width: clamp(240px, 20vw, 292px);
+		min-height: 176px;
+		padding: 1.1rem;
+		display: flex;
+		flex-direction: column;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.88);
+		border: 1px solid rgba(23, 58, 155, 0.12);
+		border-radius: 22px;
+		box-shadow: 0 12px 30px rgba(29, 39, 77, 0.07);
+	}
+
+	.testimonial-card header {
+		display: flex;
+		align-items: center;
+		gap: 0.72rem;
+	}
+
+	.client-avatar {
+		width: 38px;
+		height: 38px;
+		flex: 0 0 38px;
+		position: relative;
+		overflow: hidden;
+		background: linear-gradient(145deg, #d7e0fb 0 55%, #173a9b 56%);
+		border-radius: 50%;
+	}
+
+	.client-avatar::after {
+		content: '';
+		position: absolute;
+		width: 24px;
+		height: 24px;
+		right: -5px;
+		bottom: -5px;
+		background: rgba(255, 253, 248, 0.72);
+		border-radius: 50%;
+	}
+
+	.avatar-2 {
+		background: linear-gradient(145deg, #f1e5cf 0 55%, #0b2368 56%);
+	}
+
+	.avatar-3 {
+		background: linear-gradient(145deg, #d8e7df 0 55%, #315b4d 56%);
+	}
+
+	.testimonial-card strong {
+		display: block;
+		font-size: 0.7rem;
+	}
+
+	.testimonial-card header p {
+		margin: 0.18rem 0 0;
+		color: var(--muted);
+		font-size: 0.58rem;
+	}
+
+	.stars {
+		margin: 0.75rem 0 0.5rem;
+		color: #d79a18;
+		font-size: 0.68rem;
+		letter-spacing: 0.12em;
+	}
+
+	.testimonial-card blockquote {
+		margin: 0;
+		color: #363a46;
+		font-size: 0.7rem;
+		line-height: 1.55;
+	}
+
+	.testimonial-note {
+		margin: 1rem 0 0;
+		padding-inline: 1rem;
+		color: #8a8c96;
+		text-align: center;
+		font-size: 0.55rem;
+		line-height: 1.5;
+	}
+
+	.testimonial-note::before {
+		content: '';
+		width: 28px;
+		height: 1px;
+		margin: 0 auto 0.65rem;
+		display: block;
+		background: var(--blue);
+		opacity: 0.45;
+	}
+
+	@keyframes testimonial-left {
+		to {
+			transform: translateX(-50%);
+		}
+	}
+
+	@keyframes testimonial-right {
+		from {
+			transform: translateX(-50%);
+		}
+		to {
+			transform: translateX(0);
+		}
+	}
+
+	@media (max-width: 1000px) {
+		.testimonial-panel {
+			width: 100%;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.testimonial-heading {
+			padding-inline: 0.5rem;
+		}
+		.testimonial-heading h2 {
+			font-size: 2.25rem;
+		}
+		.testimonial-card {
+			width: 238px;
+			min-height: 170px;
+		}
+		.testimonial-marquees::before,
+		.testimonial-marquees::after {
+			width: 42px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.testimonial-track {
+			width: auto;
+			animation: none;
+		}
+		.testimonial-marquee {
+			overflow-x: auto;
+			scrollbar-width: none;
+		}
+		.testimonial-marquee::-webkit-scrollbar {
+			display: none;
+		}
+		.testimonial-group[aria-hidden='true'] {
+			display: none;
+		}
+		.testimonial-marquees::before,
+		.testimonial-marquees::after {
+			display: none;
+		}
+	}
+</style>

@@ -1,0 +1,152 @@
+---
+import SectionIntro from '../ui/SectionIntro.astro';
+import FilterChips from '../ui/FilterChips.astro';
+import TemplateCard from '../templates/TemplateCard.astro';
+import { content, type Locale } from '../../i18n/content';
+import { catalogPath, interleaveByCategory, templateCategories, templates, templatesIn, type TemplateCategory } from '../../data/templates';
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = content[locale];
+
+// Home only previews a few templates per filter; the full list lives on the catalog pages.
+const previewSize = 6;
+const previewTemplates = interleaveByCategory(templates).filter(
+	(item) => templatesIn(item.category as TemplateCategory).indexOf(item) < previewSize,
+);
+const filters = [
+	{ key: 'all', label: t.templatesIntro.all, href: catalogPath(locale), viewAll: t.templatesIntro.viewAll },
+	...templateCategories.map((key) => ({
+		key,
+		label: t.templateCategories[key],
+		href: catalogPath(locale, key),
+		viewAll: t.templatesIntro.viewAllCategory.replace('{category}', t.templateCategories[key]),
+	})),
+];
+---
+
+<section class="templates section-pad" id="templates" aria-labelledby="template-title">
+	<SectionIntro
+		id="template-title"
+		title={t.templatesIntro.title}
+		emphasis={t.templatesIntro.emphasis}
+		description={t.templatesIntro.description}
+	/>
+	<FilterChips
+		mode="button"
+		label={t.templatesIntro.filterLabel}
+		items={filters.map((filter) => ({
+			label: filter.label,
+			active: filter.key === 'all',
+			data: { 'data-filter': filter.key, 'data-view-all-href': filter.href, 'data-view-all-label': filter.viewAll },
+		}))}
+	/>
+	<div class="template-grid" data-preview-size={previewSize}>
+		{previewTemplates.map((item, index) => (
+			<TemplateCard item={item} locale={locale} hidden={index >= previewSize} />
+		))}
+	</div>
+	<div class="template-footer">
+		<a class="template-view-all" href={filters[0].href}>
+			<span class="template-view-all-label">{filters[0].viewAll}</span> <span aria-hidden="true">→</span>
+		</a>
+	</div>
+</section>
+
+<script>
+	import { prefillContactMessage } from '../../scripts/contact';
+
+	const grid = document.querySelector<HTMLElement>('.template-grid');
+	const cards = Array.from(grid?.querySelectorAll<HTMLElement>('.template-card') ?? []);
+	const filters = Array.from(document.querySelectorAll<HTMLButtonElement>('#templates [data-filter]'));
+	const viewAll = document.querySelector<HTMLAnchorElement>('.template-view-all');
+	const viewAllLabel = viewAll?.querySelector<HTMLElement>('.template-view-all-label');
+	const previewSize = Number(grid?.dataset.previewSize) || 6;
+
+	filters.forEach((button) =>
+		button.addEventListener('click', () => {
+			const filter = button.dataset.filter ?? 'all';
+			const matches = cards.filter((card) => filter === 'all' || card.dataset.category === filter);
+			cards.forEach((card) => {
+				card.hidden = true;
+			});
+			matches.forEach((card, index) => {
+				card.hidden = index >= previewSize;
+			});
+			filters.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+			if (viewAll) viewAll.href = button.dataset.viewAllHref ?? viewAll.href;
+			if (viewAllLabel) viewAllLabel.textContent = button.dataset.viewAllLabel ?? '';
+		}),
+	);
+
+	// "Choose template" on home cards fills the contact form (catalog cards link to /?template=… instead).
+	grid?.querySelectorAll<HTMLButtonElement>('.template-select[data-template-request]').forEach((button) =>
+		button.addEventListener('click', () => {
+			prefillContactMessage(button.dataset.templateRequest ?? '');
+		}),
+	);
+</script>
+
+<style>
+	.templates {
+		background:
+			radial-gradient(circle at 10% 40%, rgba(220, 228, 255, 0.55), transparent 26%),
+			linear-gradient(180deg, var(--ivory) 0%, #f4f1ea 70%, #eff1f9 90%, #e9edff 100%);
+	}
+
+	.template-grid {
+		max-width: 1320px;
+		margin: auto;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 1.3rem;
+	}
+
+	.template-footer {
+		max-width: 1320px;
+		margin: 2.2rem auto 0;
+		display: flex;
+		justify-content: center;
+	}
+
+	.template-view-all {
+		padding: 0.95rem 1.4rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 1rem;
+		color: #fff;
+		background: var(--blue);
+		border-radius: 999px;
+		font-size: 0.66rem;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		text-transform: uppercase;
+		transition: background 0.2s;
+	}
+
+	.template-view-all:hover {
+		background: var(--blue-deep);
+	}
+
+	.template-view-all span[aria-hidden] {
+		transition: transform 0.25s ease;
+	}
+
+	.template-view-all:hover span[aria-hidden] {
+		transform: translateX(3px);
+	}
+
+	.template-view-all:focus-visible {
+		outline: 3px solid var(--blue-soft);
+		outline-offset: 2px;
+	}
+
+	@media (max-width: 800px) {
+		.template-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
