@@ -41,7 +41,8 @@ export const content = {
 		},
 		catalog: {
 			title: 'Katalog', emphasis: 'template', home: 'Beranda', breadcrumb: 'Breadcrumb',
-			metaTitle: 'Katalog Template Website — Prasetya Webworks', metaTitleCategory: 'Template Website {category} — Prasetya Webworks',
+			metaTitle: 'Katalog Template Website', metaTitleCategory: 'Template Website {category}', pageLabel: 'Halaman {page}',
+			pagination: 'Navigasi halaman katalog', previous: 'Sebelumnya', next: 'Berikutnya', pageOf: 'Halaman {page} dari {total}',
 			description: 'Pilih titik awal dari beragam desain siap pakai. Setiap template kami sesuaikan dengan identitas dan kebutuhan bisnis Anda.',
 			ctaTitle: 'Belum menemukan yang cocok?', ctaText: 'Ceritakan kebutuhan Anda. Kami bantu memilih atau merancang desain yang paling sesuai.',
 		},
@@ -114,7 +115,8 @@ export const content = {
 		},
 		catalog: {
 			title: 'Template', emphasis: 'catalog', home: 'Home', breadcrumb: 'Breadcrumb',
-			metaTitle: 'Website Template Catalog — Prasetya Webworks', metaTitleCategory: '{category} Website Templates — Prasetya Webworks',
+			metaTitle: 'Website Template Catalog', metaTitleCategory: '{category} Website Templates', pageLabel: 'Page {page}',
+			pagination: 'Catalog pagination', previous: 'Previous', next: 'Next', pageOf: 'Page {page} of {total}',
 			description: 'Choose a starting point from a wide range of ready-made designs. We tailor every template to your brand and business needs.',
 			ctaTitle: 'Haven’t found the right fit?', ctaText: 'Tell us what you need. We will help you choose or design the direction that suits you best.',
 		},

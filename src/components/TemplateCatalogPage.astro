@@ -3,32 +3,41 @@ import Layout from '../layouts/Layout.astro';
 import SiteFooter from './SiteFooter.astro';
 import TemplateCard from './TemplateCard.astro';
 import { content, type Locale } from '../i18n/content';
-import { catalogPath, homePath, interleaveByCategory, templateCategories, templateRequestPath, templatesIn, type TemplateCategory } from '../data/templates';
+import { CATALOG_PAGE_SIZE, catalogItems, catalogPageCount, catalogPath, homePath, templateCategories, templateRequestPath, type TemplateCategory } from '../data/templates';
 
 interface Props {
 	locale: Locale;
 	category?: TemplateCategory;
+	/** 1-based page number. */
+	page?: number;
 }
 
-const { locale, category } = Astro.props;
+const { locale, category, page = 1 } = Astro.props;
 const t = content[locale];
 const c = t.catalog;
-const items = category ? templatesIn(category) : interleaveByCategory(templatesIn());
+const totalPages = catalogPageCount(category);
+const items = catalogItems(category).slice((page - 1) * CATALOG_PAGE_SIZE, page * CATALOG_PAGE_SIZE);
 const categoryLabel = category ? t.templateCategories[category] : undefined;
 const catalogTitle = `${c.title} ${c.emphasis}`;
+const pageLabel = c.pageLabel.replace('{page}', String(page));
 const home = homePath(locale);
 const filters = [
 	{ href: catalogPath(locale), label: t.templatesIntro.all, active: !category },
 	...templateCategories.map((key) => ({ href: catalogPath(locale, key), label: t.templateCategories[key], active: key === category })),
 ];
-const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.toUpperCase(), href: catalogPath(code, category), active: code === locale }));
+const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.toUpperCase(), href: catalogPath(code, category, page), active: code === locale }));
+
+// Pager: first, last, and the current page with its neighbours; gaps become an ellipsis. Links jump back to the list.
+const pageHref = (n: number) => `${catalogPath(locale, category, n)}#catalog-list`;
+const shownPages = [...new Set([1, page - 1, page, page + 1, totalPages])].filter((n) => n >= 1 && n <= totalPages).sort((a, b) => a - b);
+const pagerItems = shownPages.flatMap((n, index) => (index > 0 && n - shownPages[index - 1] > 1 ? ['gap', n] : [n])) as (number | 'gap')[];
 ---
 
 <Layout
 	lang={locale}
-	title={categoryLabel ? c.metaTitleCategory.replace('{category}', categoryLabel) : c.metaTitle}
+	title={`${categoryLabel ? c.metaTitleCategory.replace('{category}', categoryLabel) : c.metaTitle}${page > 1 ? ` — ${pageLabel}` : ''} — Prasetya Webworks`}
 	description={c.description}
-	alternates={{ id: catalogPath('id', category), en: catalogPath('en', category) }}
+	alternates={{ id: catalogPath('id', category, page), en: catalogPath('en', category, page) }}
 >
 	<header class="catalog-header" id="top">
 		<a class="brand" href={home} aria-label={`Prasetya Webworks — ${c.home}`}><img src="/images/prasetya-webworks-logo.png" alt="Prasetya Webworks" width="260" height="90" /></a>
@@ -49,11 +58,23 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.
 			<p>{c.description}</p>
 		</div>
 
-		<nav class="catalog-filters" aria-label={t.templatesIntro.filterLabel}>
+		<nav class="catalog-filters" id="catalog-list" aria-label={t.templatesIntro.filterLabel}>
 			{filters.map((filter) => <a class="catalog-filter" href={filter.href} aria-current={filter.active ? 'page' : undefined}>{filter.label}</a>)}
 		</nav>
 
 		<div class="catalog-grid">{items.map((item) => <TemplateCard item={item} locale={locale} href={templateRequestPath(locale, item)} />)}</div>
+
+		{totalPages > 1 && (
+			<nav class="catalog-pager" aria-label={c.pagination}>
+				{page > 1 ? <a class="pager-step" href={pageHref(page - 1)} rel="prev"><span aria-hidden="true">‹</span> <span class="pager-label">{c.previous}</span></a> : <span class="pager-step" aria-hidden="true"><span>‹</span> <span class="pager-label">{c.previous}</span></span>}
+				<ol>
+					{pagerItems.map((item) => item === 'gap'
+						? <li class="pager-gap" aria-hidden="true">…</li>
+						: <li><a class="pager-number" href={pageHref(item)} aria-current={item === page ? 'page' : undefined} aria-label={c.pageOf.replace('{page}', String(item)).replace('{total}', String(totalPages))}>{item}</a></li>)}
+				</ol>
+				{page < totalPages ? <a class="pager-step" href={pageHref(page + 1)} rel="next"><span class="pager-label">{c.next}</span> <span aria-hidden="true">›</span></a> : <span class="pager-step" aria-hidden="true"><span class="pager-label">{c.next}</span> <span>›</span></span>}
+			</nav>
+		)}
 
 		<section class="catalog-cta" aria-labelledby="catalog-cta-title">
 			<h2 id="catalog-cta-title">{c.ctaTitle}</h2>
@@ -77,8 +98,13 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.
 	.catalog-intro { max-width:720px; margin:3rem auto 2.4rem; text-align:center; }.catalog-intro h1 { margin:0; color:var(--ink); font-family:Georgia,serif; font-size:clamp(2.2rem,5vw,3.6rem); font-weight:400; letter-spacing:-.04em; line-height:1; }.catalog-intro em { color:var(--blue); }.catalog-intro p { margin:1rem auto 0; color:var(--muted); font-size:.85rem; line-height:1.6; }
 	.catalog-filters { margin-bottom:2rem; display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem; }.catalog-filter { flex:none; padding:.6rem .95rem; display:inline-flex; align-items:center; gap:.45rem; color:var(--ink); background:rgba(255,253,248,.78); border:1px solid var(--line); border-radius:999px; font-size:.68rem; letter-spacing:.03em; text-decoration:none; transition:background .2s,border-color .2s,color .2s; }.catalog-filter:hover { border-color:var(--blue); }.catalog-filter[aria-current] { color:#fff; background:var(--blue); border-color:var(--blue); }
 	.catalog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem; }
+	.catalog-pager { margin-top:2.6rem; display:flex; justify-content:center; align-items:center; gap:.75rem; flex-wrap:wrap; }.catalog-pager ol { margin:0; padding:0; display:flex; align-items:center; gap:.35rem; list-style:none; }
+	.pager-number,.pager-step { min-width:2.4rem; height:2.4rem; padding:0 .85rem; display:inline-flex; justify-content:center; align-items:center; gap:.4rem; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:999px; font-size:.68rem; letter-spacing:.04em; text-decoration:none; transition:background .2s,border-color .2s,color .2s; }
+	.pager-number { padding:0; }a.pager-number:hover,a.pager-step:hover { color:var(--blue); border-color:var(--blue); }.pager-number[aria-current] { color:#fff; background:var(--blue); border-color:var(--blue); }
+	span.pager-step { color:var(--line); }.pager-gap { padding:0 .2rem; color:var(--muted); font-size:.7rem; }
+	.pager-number:focus-visible,.pager-step:focus-visible { outline:3px solid var(--blue-soft); outline-offset:2px; }
 	.catalog-cta { margin-top:4rem; padding:clamp(2rem,5vw,3.2rem); color:#fff; background:linear-gradient(135deg,#10131d,var(--blue-deep)); border-radius:28px; text-align:center; }.catalog-cta h2 { margin:0; font-family:Georgia,serif; font-size:clamp(1.6rem,3vw,2.2rem); font-weight:400; }.catalog-cta p { max-width:520px; margin:.8rem auto 1.6rem; color:#c5cbe0; font-size:.8rem; line-height:1.6; }.catalog-cta a { padding:.95rem 1.4rem; display:inline-flex; gap:1rem; color:var(--ink); background:#fff; border-radius:999px; font-size:.66rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }.catalog-cta a:hover { background:var(--blue-soft); }
 	.catalog-filter:focus-visible,.catalog-cta a:focus-visible,.header-cta:focus-visible,.breadcrumb a:focus-visible { outline:3px solid var(--blue-soft); outline-offset:2px; }
 	@media (max-width:1000px) { .catalog-grid { grid-template-columns:repeat(2,1fr); } }
-	@media (max-width:560px) { .catalog-filters { gap:.4rem; }.catalog-filter { padding:.5rem .8rem; font-size:.64rem; }.catalog-header { height:66px; }.brand { width:115px; }.header-cta span { display:none; }.header-cta { padding:.7rem; }.catalog-grid { grid-template-columns:1fr; }.catalog-intro { margin-top:2rem; } }
+	@media (max-width:560px) { .catalog-pager { flex-wrap:nowrap; gap:.25rem; }.catalog-pager ol { gap:.2rem; }.pager-number,.pager-step { min-width:2.1rem; height:2.1rem; padding:0; }.pager-label { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }.catalog-filters { gap:.4rem; }.catalog-filter { padding:.5rem .8rem; font-size:.64rem; }.catalog-header { height:66px; }.brand { width:115px; }.header-cta span { display:none; }.header-cta { padding:.7rem; }.catalog-grid { grid-template-columns:1fr; }.catalog-intro { margin-top:2rem; } }
 </style>

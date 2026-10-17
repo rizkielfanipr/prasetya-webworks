@@ -1,0 +1,12 @@
+---
+import TemplateCatalogPage from '../../../../components/TemplateCatalogPage.astro';
+import { laterCatalogPages, templateCategories, type TemplateCategory } from '../../../../data/templates';
+
+export function getStaticPaths() {
+	return templateCategories.flatMap((category) => laterCatalogPages(category).map((page) => ({ params: { category, page } })));
+}
+
+const category = Astro.params.category as TemplateCategory;
+---
+
+<TemplateCatalogPage locale="id" category={category} page={Number(Astro.params.page)} />

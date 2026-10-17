@@ -29,8 +29,20 @@ export const interleaveByCategory = (items: TemplateItem[]) => {
 
 export const homePath = (locale: Locale) => (locale === 'id' ? '/' : '/en/');
 
-export const catalogPath = (locale: Locale, category?: TemplateCategory) =>
-	`${locale === 'id' ? '' : '/en'}/templates/${category ? `${category}/` : ''}`;
+/** Catalog URL; page 1 lives at the base path, later pages at .../page/<n>/. */
+export const catalogPath = (locale: Locale, category?: TemplateCategory, page = 1) =>
+	`${locale === 'id' ? '' : '/en'}/templates/${category ? `${category}/` : ''}${page > 1 ? `page/${page}/` : ''}`;
+
+export const CATALOG_PAGE_SIZE = 24;
+
+/** Templates in catalog order: the unfiltered list is interleaved across categories. */
+export const catalogItems = (category?: TemplateCategory) => (category ? templatesIn(category) : interleaveByCategory(templates));
+
+export const catalogPageCount = (category?: TemplateCategory) => Math.max(1, Math.ceil(catalogItems(category).length / CATALOG_PAGE_SIZE));
+
+/** Page numbers 2..n for getStaticPaths; page 1 is served by the index route. */
+export const laterCatalogPages = (category?: TemplateCategory) =>
+	Array.from({ length: catalogPageCount(category) - 1 }, (_, index) => String(index + 2));
 
 /** Sends the visitor to the home contact form, which pre-fills the message from these params. */
 export const templateRequestPath = (locale: Locale, item: TemplateItem) =>
