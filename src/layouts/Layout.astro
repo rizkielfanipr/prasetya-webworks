@@ -1,6 +1,8 @@
 ---
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
+import WhatsAppFloat from '../components/WhatsAppFloat.astro';
+import { content } from '../i18n/content';
 
 interface Props {
 	title?: string;
@@ -16,6 +18,9 @@ const {
 	lang = 'id',
 	alternates = { id: '/', en: '/en/' },
 } = Astro.props;
+
+// Every page gets the floating consultation button, pointing at the home contact form.
+const consultationHref = `${lang === 'id' ? '/' : '/en/'}#contact`;
 ---
 
 <!doctype html>
@@ -34,7 +39,10 @@ const {
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body><slot /></body>
+	<body>
+		<slot />
+		<WhatsAppFloat href={consultationHref} label={content[lang].nav.consultation} />
+	</body>
 </html>
 
 <style is:global>

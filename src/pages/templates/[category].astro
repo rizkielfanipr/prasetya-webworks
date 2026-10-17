@@ -3,10 +3,10 @@ import TemplateCatalogPage from '../../components/TemplateCatalogPage.astro';
 import { templateCategories, type TemplateCategory } from '../../data/templates';
 
 export function getStaticPaths() {
-	return templateCategories.map((kategori) => ({ params: { kategori } }));
+	return templateCategories.map((category) => ({ params: { category } }));
 }
 
-const kategori = Astro.params.kategori as TemplateCategory;
+const category = Astro.params.category as TemplateCategory;
 ---
 
-<TemplateCatalogPage locale="id" category={kategori} />
+<TemplateCatalogPage locale="id" category={category} />

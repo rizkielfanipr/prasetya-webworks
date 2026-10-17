@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { content, type Locale } from '../i18n/content';
+import SiteFooter from '../components/SiteFooter.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import { catalogPath, interleaveByCategory, templateCategories, templates, templatesIn, type TemplateCategory } from '../data/templates';
 
@@ -44,13 +45,13 @@ const partners = [
 <Layout lang={locale} title={t.meta.title} description={t.meta.description}>
 	<header class="site-header">
 		<a class="brand" href="#top" aria-label={`Prasetya Webworks — ${t.footer.back}`}><img src="/images/prasetya-webworks-logo.png" alt="Prasetya Webworks" width="260" height="90" /></a>
-		<nav class="desktop-nav" aria-label="Main navigation">{showPartners && <a href="#tentang">{t.nav.about}</a>}<a href="#layanan">{t.nav.services}</a><a href="#paket">{t.nav.packages}</a><a href="#karya">{t.nav.work}</a><a href="#faq">{t.nav.faq}</a></nav>
-		<div class="header-actions"><nav class="language-switcher" aria-label="Language"><a class="active" href={languageLinks.currentHref} aria-current="page">{languageLinks.current}</a><span aria-hidden="true">/</span><a href={languageLinks.otherHref}>{languageLinks.other}</a></nav><a class="header-cta" href="#kontak"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a></div>
+		<nav class="desktop-nav" aria-label="Main navigation">{showPartners && <a href="#partners">{t.nav.about}</a>}<a href="#why-us">{t.nav.services}</a><a href="#packages">{t.nav.packages}</a><a href="#templates">{t.nav.work}</a><a href="#faq">{t.nav.faq}</a></nav>
+		<div class="header-actions"><nav class="language-switcher" aria-label="Language"><a class="active" href={languageLinks.currentHref} aria-current="page">{languageLinks.current}</a><span aria-hidden="true">/</span><a href={languageLinks.otherHref}>{languageLinks.other}</a></nav><a class="header-cta" href="#contact"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a></div>
 		<div class="mobile-actions">
 			<nav class="mobile-header-languages" aria-label="Language"><a class={locale === 'id' ? 'active' : ''} href="/" aria-current={locale === 'id' ? 'page' : undefined}>ID</a><span aria-hidden="true">/</span><a class={locale === 'en' ? 'active' : ''} href="/en/" aria-current={locale === 'en' ? 'page' : undefined}>EN</a></nav>
 			<details class="mobile-nav">
 				<summary aria-label={t.nav.menu}><span class="hamburger-icon" aria-hidden="true"><i></i><i></i><i></i></span></summary>
-				<div class="mobile-panel">{showPartners && <a href="#tentang">{t.nav.about}</a>}<a href="#layanan">{t.nav.services}</a><a href="#paket">{t.nav.packages}</a><a href="#karya">{t.nav.work}</a><a href="#faq">{t.nav.faq}</a><a href="#kontak"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a></div>
+				<div class="mobile-panel">{showPartners && <a href="#partners">{t.nav.about}</a>}<a href="#why-us">{t.nav.services}</a><a href="#packages">{t.nav.packages}</a><a href="#templates">{t.nav.work}</a><a href="#faq">{t.nav.faq}</a><a href="#contact"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a></div>
 			</details>
 		</div>
 	</header>
@@ -63,13 +64,13 @@ const partners = [
 				<h1><span><strong>{t.hero.lead}</strong>{t.hero.connector}</span><span>{t.hero.secondLine} <strong><em>{t.hero.emphasis}</em></strong></span></h1>
 				<p class="hero-copy">{t.hero.body}</p>
 				<div class="hero-actions">
-					<a class="button button-light" href="#kontak">{t.hero.primary} <span>↗</span></a>
-					<a class="button button-outline" href="#karya">{t.hero.secondary} <span>↓</span></a>
+					<a class="button button-light" href="#contact">{t.hero.primary} <span>↗</span></a>
+					<a class="button button-outline" href="#templates">{t.hero.secondary} <span>↓</span></a>
 				</div>
 			</div>
 		</section>
 
-		<div class="content-shell" id="tentang">
+		<div class="content-shell" id="partners">
 			{showPartners && (
 				<section class="partner-strip" aria-labelledby="partner-title">
 					<div class="partner-heading"><h2 id="partner-title">{t.partners.title} <em>{t.partners.emphasis}</em></h2><p>{t.partners.description}</p></div>
@@ -82,17 +83,17 @@ const partners = [
 				</section>
 			)}
 
-			<section class="benefits section-pad" id="layanan" aria-labelledby="benefit-title">
+			<section class="benefits section-pad" id="why-us" aria-labelledby="benefit-title">
 				<div class="section-intro centered"><h2 id="benefit-title">{t.benefitsIntro.title} <em>{t.benefitsIntro.emphasis}</em></h2><p>{t.benefitsIntro.description}</p></div>
 				<div class="benefit-grid">{benefits.map((benefit, index) => <article class="benefit-card"><div class="benefit-media"><img src={benefit.image} alt="" loading={index > 1 ? 'lazy' : 'eager'} style={`object-position:${benefit.position}`} /></div><div class="benefit-copy"><h3>{benefit.title}</h3><p>{benefit.text}</p></div></article>)}</div>
 			</section>
 
-			<section class="pricing section-pad" id="paket" aria-labelledby="pricing-title">
+			<section class="pricing section-pad" id="packages" aria-labelledby="pricing-title">
 				<div class="section-intro centered"><h2 id="pricing-title">{t.pricingIntro.title} <em>{t.pricingIntro.emphasis}</em></h2><p>{t.pricingIntro.description}</p></div>
 				<div class="pricing-grid">{packages.map((item) => <article class:list={['pricing-card', { featured: 'featured' in item && item.featured }]}><div><h3>{item.name}</h3><p>{item.tagline}</p></div><ul>{item.features.map((feature) => <li><span aria-hidden="true">✓</span>{feature}</li>)}</ul><button class="package-select" type="button" data-package-name={item.name} data-package-tagline={item.tagline}>{t.pricingIntro.select} <span aria-hidden="true">↗</span></button></article>)}</div>
 			</section>
 
-			<section class="templates section-pad" id="karya" aria-labelledby="template-title">
+			<section class="templates section-pad" id="templates" aria-labelledby="template-title">
 				<div class="section-intro centered"><h2 id="template-title">{t.templatesIntro.title} <em>{t.templatesIntro.emphasis}</em></h2><p>{t.templatesIntro.description}</p></div>
 				<div class="template-filters" role="group" aria-label={t.templatesIntro.filterLabel}>
 					{templateFilters.map((filter) => <button class="template-filter" type="button" data-filter={filter.key} data-view-all-href={filter.href} data-view-all-label={filter.viewAll} aria-pressed={filter.key === 'all' ? 'true' : 'false'}>{filter.label}</button>)}
@@ -106,7 +107,7 @@ const partners = [
 				<div class="faq-list">{faqs.map((faq) => <details><summary>{faq.question}<span aria-hidden="true">+</span></summary><p>{faq.answer}</p></details>)}</div>
 			</section>
 
-			<section class="contact section-pad" id="kontak" aria-labelledby="contact-title">
+			<section class="contact section-pad" id="contact" aria-labelledby="contact-title">
 				<form class="contact-form" id="contact-form">
 					<h2 id="contact-title">{t.contact.title}</h2><p>{t.contact.description}</p>
 					<div class="field-row"><label>{t.contact.name}<input name="name" type="text" placeholder={t.contact.namePlaceholder} required /></label><label>{t.contact.email}<input name="email" type="email" placeholder="nama@email.com" required /></label></div>
@@ -161,14 +162,7 @@ const partners = [
 		</dialog>
 	</main>
 
-	<footer class="site-footer">
-		<div class="footer-main"><div class="footer-brand"><img src="/images/prasetya-webworks-logo.png" alt="Prasetya Webworks" width="260" height="90" /></div><div><span>{t.footer.hours}</span><p>{t.footer.weekdays}<br />{t.footer.saturday}</p></div><div><span>{t.footer.contact}</span><p>hello@prasetyawebworks.com<br />Indonesia</p></div><nav aria-label="Footer navigation">{showPartners && <a href="#tentang">{t.nav.about}</a>}<a href="#layanan">{t.nav.services}</a><a href="#paket">{t.nav.packages}</a><a href="#karya">{t.nav.work}</a><a href="#faq">{t.nav.faq}</a></nav></div>
-		<div class="footer-bottom"><span>© {new Date().getFullYear()} Prasetya Webworks. {t.footer.rights}</span><a href="#top">{t.footer.back} ↑</a></div>
-	</footer>
-
-	<a class="whatsapp-float" href="#kontak" aria-label={t.nav.consultation} title={t.nav.consultation}>
-		<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
-	</a>
+	<SiteFooter locale={locale} showAbout={showPartners} />
 
 		<script>
 			const page = document.querySelector<HTMLElement>('main');
@@ -243,11 +237,11 @@ const partners = [
 		}));
 		document.querySelectorAll<HTMLButtonElement>('.template-select[data-template-request]').forEach((button) => button.addEventListener('click', () => {
 			if (contactMessage) contactMessage.value = button.dataset.templateRequest ?? '';
-			document.querySelector('#kontak')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+			document.querySelector('#contact')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
 			form?.querySelector<HTMLInputElement>('input[name="name"]')?.focus({ preventScroll: true });
 		}));
 
-		// Visitors arriving from the template catalog (/?template=0001&name=…#kontak) get the message pre-filled.
+		// Visitors arriving from the template catalog (/?template=0001&name=…#contact) get the message pre-filled.
 		const requestedTemplate = new URLSearchParams(window.location.search);
 		const requestedCode = requestedTemplate.get('template') ?? '';
 		if (/^\d{4}$/.test(requestedCode) && contactMessage) {
@@ -266,8 +260,6 @@ const partners = [
 			'.contact-form',
 			'.testimonial-heading',
 			'.testimonial-marquees',
-			'.footer-main',
-			'.footer-bottom',
 		].join(',')));
 
 		revealItems.forEach((item, index) => {
@@ -350,14 +342,9 @@ const partners = [
 			.faq { background:radial-gradient(circle at 82% 38%,rgba(174,191,243,.34),transparent 26%),linear-gradient(180deg,#e9edff 0%,#e9edff 68%,#f0f0f0 90%,var(--ivory) 100%); }.faq-list { max-width:1080px; margin:auto; display:grid; gap:.75rem; }.faq-list details { overflow:hidden; background:rgba(255,255,255,.48); border:1px solid rgba(23,58,155,.2); border-radius:16px; transition:background .2s,box-shadow .2s; }.faq-list details[open] { background:rgba(255,255,255,.78); box-shadow:0 12px 25px rgba(23,58,155,.08); }.faq-list summary { min-height:64px; padding:0 1rem; display:flex; justify-content:space-between; gap:2rem; align-items:center; cursor:pointer; list-style:none; color:var(--ink); font-family:Georgia,serif; font-size:.94rem; }.faq-list summary::-webkit-details-marker { display:none; }.faq-list summary span { width:27px; height:27px; flex:0 0 27px; display:grid; place-items:center; color:#fff; background:var(--blue); border-radius:50%; font-family:Arial,sans-serif; font-size:1rem; transition:transform .2s; }.faq-list details[open] summary span { transform:rotate(45deg); }.faq-list details p { max-width:740px; margin:0 3rem 1.35rem 1rem; color:var(--muted); font-size:.79rem; line-height:1.65; }
 			.contact { max-width:1500px; margin:auto; padding-inline:clamp(1.25rem,4vw,4.5rem); display:grid; grid-template-columns:minmax(340px,.78fr) minmax(0,1.35fr); gap:clamp(2rem,4vw,4.5rem); align-items:center; background:radial-gradient(circle at 78% 42%,rgba(215,224,251,.45),transparent 36%),linear-gradient(180deg,var(--ivory) 0%,#f8f5ef 70%,#ece9e2 100%); }.contact-form { padding:clamp(1.5rem,2.6vw,2.5rem); background:rgba(255,253,248,.68); border:1px solid rgba(23,58,155,.16); border-radius:26px; }.contact-form .eyebrow { color:var(--blue); }.contact-form h2 { margin:0; color:var(--ink); font-family:Georgia,serif; font-size:clamp(2.25rem,3.2vw,3.65rem); letter-spacing:-.045em; line-height:.98; font-weight:400; }.contact-form > p:not(.eyebrow,.form-status) { max-width:510px; margin:1rem 0 1.8rem; color:var(--muted); font-size:.78rem; line-height:1.65; }.field-row { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }.contact-form label { margin-bottom:.8rem; display:grid; gap:.42rem; font-size:.61rem; font-weight:700; letter-spacing:.035em; }.contact-form input,.contact-form select,.contact-form textarea { width:100%; padding:.86rem .9rem; color:var(--ink); background:rgba(255,255,255,.72); border:1px solid rgba(17,19,26,.14); border-radius:14px; outline:none; font-size:.76rem; transition:border-color .2s,box-shadow .2s,background .2s; }.contact-form input:focus,.contact-form select:focus,.contact-form textarea:focus { background:#fff; border-color:var(--blue); box-shadow:0 0 0 3px rgba(23,58,155,.11); }.contact-form button { width:100%; padding:.95rem 1.1rem; display:flex; justify-content:center; gap:1rem; color:#fff; background:linear-gradient(100deg,var(--blue),var(--blue-deep)); border:0; border-radius:999px; cursor:pointer; font-size:.6rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; transition:filter .2s,transform .2s; }.contact-form button:hover { filter:brightness(1.08); transform:translateY(-1px); }.form-status { min-height:1rem; margin:.65rem 0 0; color:var(--muted); font-size:.66rem; }
 			.testimonial-panel { min-width:0; padding-block:1rem; overflow:hidden; }.testimonial-heading { max-width:700px; margin:0 auto 1.7rem; padding-inline:clamp(1rem,2vw,2rem); text-align:center; }.testimonial-heading .eyebrow { margin-bottom:.75rem; color:var(--blue); }.testimonial-heading h2 { margin:0; color:var(--ink); font-family:Georgia,serif; font-size:clamp(2rem,3.1vw,3.35rem); font-weight:400; letter-spacing:-.045em; line-height:.98; }.testimonial-heading h2 em { color:var(--blue); font-weight:400; }.testimonial-heading > p:last-child { max-width:580px; margin:.75rem auto 0; color:var(--muted); font-size:.72rem; line-height:1.55; }.testimonial-marquees { position:relative; display:grid; gap:.85rem; isolation:isolate; }.testimonial-marquees::before,.testimonial-marquees::after { content:""; position:absolute; z-index:4; top:-2px; bottom:-2px; width:clamp(48px,8vw,120px); pointer-events:none; }.testimonial-marquees::before { left:-1px; background:linear-gradient(90deg,#f7f4ee 10%,rgba(247,244,238,.88) 35%,transparent 100%); }.testimonial-marquees::after { right:-1px; background:linear-gradient(270deg,#f7f4ee 10%,rgba(247,244,238,.88) 35%,transparent 100%); }.testimonial-marquee { width:100%; overflow:hidden; }.testimonial-track { width:max-content; display:flex; animation:testimonial-left 46s linear infinite; will-change:transform; }.testimonial-marquee-right .testimonial-track { animation-name:testimonial-right; animation-duration:52s; }.testimonial-marquees:hover .testimonial-track,.testimonial-marquees:focus-within .testimonial-track { animation-play-state:paused; }.testimonial-group { display:flex; flex-shrink:0; gap:.85rem; padding-right:.85rem; }.testimonial-card { width:clamp(240px,20vw,292px); min-height:176px; padding:1.1rem; display:flex; flex-direction:column; color:var(--ink); background:rgba(255,255,255,.88); border:1px solid rgba(23,58,155,.12); border-radius:22px; box-shadow:0 12px 30px rgba(29,39,77,.07); }.testimonial-card header { display:flex; align-items:center; gap:.72rem; }.client-avatar { width:38px; height:38px; flex:0 0 38px; position:relative; overflow:hidden; background:linear-gradient(145deg,#d7e0fb 0 55%,#173a9b 56%); border-radius:50%; }.client-avatar::after { content:""; position:absolute; width:24px; height:24px; right:-5px; bottom:-5px; background:rgba(255,253,248,.72); border-radius:50%; }.avatar-2 { background:linear-gradient(145deg,#f1e5cf 0 55%,#0b2368 56%); }.avatar-3 { background:linear-gradient(145deg,#d8e7df 0 55%,#315b4d 56%); }.testimonial-card strong { display:block; font-size:.7rem; }.testimonial-card header p { margin:.18rem 0 0; color:var(--muted); font-size:.58rem; }.stars { margin:.75rem 0 .5rem; color:#d79a18; font-size:.68rem; letter-spacing:.12em; }.testimonial-card blockquote { margin:0; color:#363a46; font-size:.7rem; line-height:1.55; }.testimonial-note { margin:1rem 0 0; padding-inline:1rem; color:#8a8c96; text-align:center; font-size:.55rem; line-height:1.5; }.testimonial-note::before { content:""; width:28px; height:1px; margin:0 auto .65rem; display:block; background:var(--blue); opacity:.45; }@keyframes testimonial-left { to { transform:translateX(-50%); } }@keyframes testimonial-right { from { transform:translateX(-50%); } to { transform:translateX(0); } }
-			.site-footer { padding:3.5rem clamp(1.25rem,5vw,5rem) 1.5rem; color:#fff; background:#10131d; border-top:5px solid var(--blue); }.footer-main { display:grid; grid-template-columns:1.4fr 1fr 1fr auto; gap:3rem; }.footer-brand { display:flex; align-items:flex-start; }.footer-brand img { width:138px; height:auto; display:block; filter:invert(1); }.footer-main span { display:block; margin-bottom:.65rem; color:#7590ff; font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; }.footer-main p { margin:0; color:#b4b8c7; font-size:.72rem; line-height:1.7; }.footer-main nav { display:grid; gap:.7rem; }.footer-main nav a { color:#b4b8c7; font-size:.68rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }.footer-main nav a:hover,.footer-bottom a:hover { color:#fff; }.footer-bottom { margin-top:3rem; padding-top:1.3rem; display:flex; justify-content:space-between; gap:2rem; color:#71788e; border-top:1px solid #2b3142; font-size:.62rem; }.footer-bottom a { color:#9eb3ff; text-decoration:none; }
-		.whatsapp-float { width:58px; height:58px; position:fixed; z-index:40; right:clamp(1rem,2.5vw,2rem); bottom:clamp(1rem,2.5vw,2rem); display:grid; place-items:center; color:#fff; background:#25d366; border:1px solid rgba(255,255,255,.45); border-radius:50%; box-shadow:0 10px 28px rgba(16,80,43,.32); text-decoration:none; transition:background .2s ease,box-shadow .2s ease,transform .2s ease; }
-		.whatsapp-float i { font-size:1.8rem; line-height:1; }
-		.whatsapp-float:hover { color:#fff; background:#1ebe5d; box-shadow:0 14px 34px rgba(16,80,43,.4); transform:translateY(-3px) scale(1.04); }
-		.whatsapp-float:focus-visible { outline:3px solid #fff; outline-offset:3px; box-shadow:0 0 0 6px rgba(37,211,102,.5); }
-		@media (max-width:1000px) { .pricing-grid { grid-template-columns:repeat(2,1fr); }.package-modal-shell { grid-template-columns:1fr; }.package-summary { min-height:auto; }.contact { grid-template-columns:1fr; }.contact-form { max-width:680px; margin:auto; }.testimonial-panel { width:100%; }.footer-main { grid-template-columns:1fr 1fr; }.hero-note { display:none; } }
-		@media (max-width:800px) { .template-filters { flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; padding-bottom:.4rem; scrollbar-width:none; }.template-filters::-webkit-scrollbar { display:none; }.site-header { grid-template-columns:1fr auto; height:66px; }.desktop-nav,.header-actions { display:none; }.mobile-actions { display:flex; }.mobile-nav { display:block; }.hero { min-height:720px; }.hero-content { padding-top:7rem; }.hero-actions { flex-wrap:wrap; }.content-shell { margin-top:-30px; border-radius:22px 22px 0 0; }.benefit-grid,.template-grid { grid-template-columns:1fr; }.benefit-card { grid-template-columns:minmax(220px,38%) 1fr; }.hero h1 { font-size:clamp(2.55rem,7.4vw,4.15rem); }.hero h1 > span { white-space:normal; } }
-	@media (max-width:560px) { .brand { width:115px; }.hero { min-height:790px; }.hero h1 { font-size:clamp(1.6rem,7.1vw,1.92rem); }.hero-actions { flex-direction:column; align-items:stretch; }.button { width:100%; justify-content:center; gap:.75rem; }.partner-strip { padding-block:2.4rem 2.7rem; }.partner-heading h2 { font-size:2rem; }.partner-marquee { margin-top:1.5rem; }.partner-item { width:190px; min-height:74px; }.partner-marquee::before,.partner-marquee::after { width:44px; }.pricing-grid,.template-grid,.field-row { grid-template-columns:1fr; }.benefit-card { min-height:0; grid-template-columns:1fr; }.benefit-media { aspect-ratio:16/9; }.benefit-media::after { inset:46% 0 -1px; background:linear-gradient(180deg,transparent 0%,rgba(255,253,248,.62) 58%,rgba(255,253,248,.98) 100%); }.benefit-copy { margin:-1.25rem 0 0; padding:1.85rem 1.35rem 1.55rem; }.benefit-copy::before { display:none; }.benefit-card h3 { font-size:1.3rem; }.package-modal { width:calc(100% - 1rem); max-height:calc(100dvh - 1rem); border-radius:20px; }.package-modal-shell { border-radius:20px; }.package-summary,.package-order-form { padding:2rem 1.25rem; }.package-summary h2 { font-size:2.7rem; }.package-order-form h2 { font-size:2rem; }.modal-close { top:.7rem; right:.7rem; }.section-pad { padding-block:4.5rem; }.contact { padding-inline:1.1rem; }.contact-form h2 { font-size:2.45rem; }.testimonial-heading { padding-inline:.5rem; }.testimonial-heading h2 { font-size:2.25rem; }.testimonial-card { width:238px; min-height:170px; }.testimonial-marquees::before,.testimonial-marquees::after { width:42px; }.footer-main { grid-template-columns:1fr; }.footer-bottom { flex-direction:column; }.faq-list summary { font-size:.95rem; }.whatsapp-float { width:54px; height:54px; right:1rem; bottom:1rem; }.whatsapp-float i { font-size:1.65rem; } }
+		@media (max-width:1000px) { .pricing-grid { grid-template-columns:repeat(2,1fr); }.package-modal-shell { grid-template-columns:1fr; }.package-summary { min-height:auto; }.contact { grid-template-columns:1fr; }.contact-form { max-width:680px; margin:auto; }.testimonial-panel { width:100%; }.hero-note { display:none; } }
+		@media (max-width:800px) { .site-header { grid-template-columns:1fr auto; height:66px; }.desktop-nav,.header-actions { display:none; }.mobile-actions { display:flex; }.mobile-nav { display:block; }.hero { min-height:720px; }.hero-content { padding-top:7rem; }.hero-actions { flex-wrap:wrap; }.content-shell { margin-top:-30px; border-radius:22px 22px 0 0; }.benefit-grid,.template-grid { grid-template-columns:1fr; }.benefit-card { grid-template-columns:minmax(220px,38%) 1fr; }.hero h1 { font-size:clamp(2.55rem,7.4vw,4.15rem); }.hero h1 > span { white-space:normal; } }
+	@media (max-width:560px) { .template-filters { gap:.4rem; }.template-filter { padding:.5rem .8rem; font-size:.64rem; }.brand { width:115px; }.hero { min-height:790px; }.hero h1 { font-size:clamp(1.6rem,7.1vw,1.92rem); }.hero-actions { flex-direction:column; align-items:stretch; }.button { width:100%; justify-content:center; gap:.75rem; }.partner-strip { padding-block:2.4rem 2.7rem; }.partner-heading h2 { font-size:2rem; }.partner-marquee { margin-top:1.5rem; }.partner-item { width:190px; min-height:74px; }.partner-marquee::before,.partner-marquee::after { width:44px; }.pricing-grid,.template-grid,.field-row { grid-template-columns:1fr; }.benefit-card { min-height:0; grid-template-columns:1fr; }.benefit-media { aspect-ratio:16/9; }.benefit-media::after { inset:46% 0 -1px; background:linear-gradient(180deg,transparent 0%,rgba(255,253,248,.62) 58%,rgba(255,253,248,.98) 100%); }.benefit-copy { margin:-1.25rem 0 0; padding:1.85rem 1.35rem 1.55rem; }.benefit-copy::before { display:none; }.benefit-card h3 { font-size:1.3rem; }.package-modal { width:calc(100% - 1rem); max-height:calc(100dvh - 1rem); border-radius:20px; }.package-modal-shell { border-radius:20px; }.package-summary,.package-order-form { padding:2rem 1.25rem; }.package-summary h2 { font-size:2.7rem; }.package-order-form h2 { font-size:2rem; }.modal-close { top:.7rem; right:.7rem; }.section-pad { padding-block:4.5rem; }.contact { padding-inline:1.1rem; }.contact-form h2 { font-size:2.45rem; }.testimonial-heading { padding-inline:.5rem; }.testimonial-heading h2 { font-size:2.25rem; }.testimonial-card { width:238px; min-height:170px; }.testimonial-marquees::before,.testimonial-marquees::after { width:42px; }.faq-list summary { font-size:.95rem; } }
 	@media (prefers-reduced-motion:reduce) { .partner-track,.testimonial-track,.mobile-panel { width:auto; animation:none; }.hamburger-icon i { transition:none; }.partner-marquee,.testimonial-marquee { overflow-x:auto; scrollbar-width:none; }.partner-marquee::-webkit-scrollbar,.testimonial-marquee::-webkit-scrollbar { display:none; }.partner-group[aria-hidden="true"],.testimonial-group[aria-hidden="true"] { display:none; }.partner-marquee::before,.partner-marquee::after,.testimonial-marquees::before,.testimonial-marquees::after { display:none; } }
 
 	/* Shared color stops keep the partner and benefits sections visually continuous. */
@@ -384,5 +371,5 @@ const partners = [
 	@keyframes hero-content-in { from { opacity:0; transform:translate3d(0,22px,0); } to { opacity:1; transform:translate3d(0,0,0); } }
 	@keyframes hero-shade-in { from { opacity:.35; } to { opacity:1; } }
 	@media (max-width:560px) { .partner-strip { padding-bottom:3.5rem; } }
-	@media (prefers-reduced-motion:reduce) { .site-header,.hero-content,.hero-shade,:global(.scroll-reveal),.button span,.package-select span,.contact-form button span,.order-submit span,.whatsapp-float { animation:none!important; transition:none!important; }:global(.scroll-reveal) { opacity:1; transform:none; }.hero-visual { transform:none!important; } }
+	@media (prefers-reduced-motion:reduce) { .site-header,.hero-content,.hero-shade,:global(.scroll-reveal),.button span,.package-select span,.contact-form button span,.order-submit span { animation:none!important; transition:none!important; }:global(.scroll-reveal) { opacity:1; transform:none; }.hero-visual { transform:none!important; } }
 </style>

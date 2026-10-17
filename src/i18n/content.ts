@@ -46,8 +46,8 @@ export const content = {
 			ctaTitle: 'Belum menemukan yang cocok?', ctaText: 'Ceritakan kebutuhan Anda. Kami bantu memilih atau merancang desain yang paling sesuai.',
 		},
 		templateCategories: {
-			bisnis: 'Bisnis & Jasa', kreatif: 'Kreatif & Portofolio', teknologi: 'Teknologi', kuliner: 'Kuliner', kesehatan: 'Kesehatan & Olahraga', properti: 'Properti & Konstruksi',
-			kecantikan: 'Fashion & Kecantikan', pendidikan: 'Pendidikan', acara: 'Acara & Pernikahan', travel: 'Travel & Transportasi', lainnya: 'Lainnya',
+			'business-technology': 'Bisnis & Teknologi', 'creative-portfolio': 'Kreatif & Portofolio', 'food-lifestyle': 'Kuliner & Gaya Hidup', 'health-sports': 'Kesehatan & Olahraga',
+			'property-construction': 'Properti & Konstruksi', 'travel-events': 'Travel & Acara', 'education-community': 'Pendidikan & Komunitas',
 		},
 		faqTitle: { title: 'Pertanyaan yang', emphasis: 'sering ditanyakan' },
 		faqs: [
@@ -71,7 +71,7 @@ export const content = {
 			{ quote: 'Dari diskusi awal sampai peluncuran, prosesnya berjalan jelas dan terasa sangat kolaboratif.', name: 'Contoh Klien 06', role: 'Usaha rintisan · Landing page' },
 		],
 		modal: { close: 'Tutup form pemesanan', detail: 'Detail paket terpilih', included: 'Yang termasuk dalam paket', note: 'Detail ruang lingkup dan jadwal pengerjaan akan dikonfirmasi kembali setelah kebutuhan Anda dipahami.', title: 'Ceritakan kebutuhan Anda', description: 'Isi data singkat berikut. Kami akan menghubungi Anda untuk melanjutkan proses konsultasi.', name: 'Nama', namePlaceholder: 'Nama lengkap', whatsapp: 'WhatsApp', email: 'Email', business: 'Nama bisnis', optional: '(opsional)', businessPlaceholder: 'Nama bisnis atau brand', needs: 'Kebutuhan singkat', needsPlaceholder: 'Ceritakan website yang ingin dibuat', submit: 'Kirim pemesanan' },
-		footer: { hours: 'Jam layanan', weekdays: 'Senin—Jumat, 09.00—17.00', saturday: 'Sabtu, 10.00—14.00', contact: 'Kontak', rights: 'Seluruh hak dilindungi.', back: 'Kembali ke atas' },
+		footer: { services: 'Layanan', serviceItems: ['Landing page', 'Company profile', 'Website bisnis', 'Redesign website'], contact: 'Kontak', rights: 'Seluruh hak dilindungi.', back: 'Kembali ke atas' },
 		status: { email: 'Aplikasi email Anda sedang dibuka.', packageSubject: 'Pemesanan paket', consultationSubject: 'Konsultasi website', package: 'Paket', name: 'Nama', business: 'Nama bisnis', needs: 'Kebutuhan', topic: 'Topik' },
 	},
 	en: {
@@ -119,8 +119,8 @@ export const content = {
 			ctaTitle: 'Haven’t found the right fit?', ctaText: 'Tell us what you need. We will help you choose or design the direction that suits you best.',
 		},
 		templateCategories: {
-			bisnis: 'Business & Services', kreatif: 'Creative & Portfolio', teknologi: 'Technology', kuliner: 'Food & Drink', kesehatan: 'Health & Sports', properti: 'Property & Construction',
-			kecantikan: 'Fashion & Beauty', pendidikan: 'Education', acara: 'Events & Weddings', travel: 'Travel & Transport', lainnya: 'Others',
+			'business-technology': 'Business & Technology', 'creative-portfolio': 'Creative & Portfolio', 'food-lifestyle': 'Food & Lifestyle', 'health-sports': 'Health & Sports',
+			'property-construction': 'Property & Construction', 'travel-events': 'Travel & Events', 'education-community': 'Education & Community',
 		},
 		faqTitle: { title: 'Questions we are', emphasis: 'often asked' },
 		faqs: [
@@ -144,7 +144,7 @@ export const content = {
 			{ quote: 'From the first conversation through launch, the process was clear and genuinely collaborative.', name: 'Example Client 06', role: 'Startup · Landing page' },
 		],
 		modal: { close: 'Close order form', detail: 'Selected package details', included: 'Included in this package', note: 'We will confirm the final scope and schedule once we understand your requirements.', title: 'Tell us what you need', description: 'Share a few details and we will contact you to continue the consultation.', name: 'Name', namePlaceholder: 'Full name', whatsapp: 'WhatsApp', email: 'Email', business: 'Business name', optional: '(optional)', businessPlaceholder: 'Business or brand name', needs: 'Brief requirements', needsPlaceholder: 'Tell us about the website you want to build', submit: 'Send request' },
-		footer: { hours: 'Hours', weekdays: 'Monday—Friday, 09:00—17:00', saturday: 'Saturday, 10:00—14:00', contact: 'Contact', rights: 'All rights reserved.', back: 'Back to top' },
+		footer: { services: 'Services', serviceItems: ['Landing page', 'Company profile', 'Business website', 'Website redesign'], contact: 'Contact', rights: 'All rights reserved.', back: 'Back to top' },
 		status: { email: 'Your email application is opening.', packageSubject: 'Package request', consultationSubject: 'Website consultation', package: 'Package', name: 'Name', business: 'Business name', needs: 'Requirements', topic: 'Topic' },
 	},
 } as const;

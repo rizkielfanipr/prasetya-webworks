@@ -1,0 +1,32 @@
+---
+import { content, type Locale } from '../i18n/content';
+
+interface Props {
+	locale: Locale;
+	/** Prefix for the home section links; empty on the home page itself, e.g. "/" or "/en/" elsewhere. */
+	home?: string;
+	/** Show the "Mitra" link (only while the partners section is visible). */
+	showAbout?: boolean;
+}
+
+const { locale, home = '', showAbout = false } = Astro.props;
+const t = content[locale];
+const links = [
+	...(showAbout ? [{ hash: '#partners', label: t.nav.about }] : []),
+	{ hash: '#why-us', label: t.nav.services },
+	{ hash: '#packages', label: t.nav.packages },
+	{ hash: '#templates', label: t.nav.work },
+	{ hash: '#faq', label: t.nav.faq },
+];
+---
+
+<footer class="site-footer">
+	<div class="footer-main"><div class="footer-brand"><img src="/images/prasetya-webworks-logo.png" alt="Prasetya Webworks" width="260" height="90" /></div><div><span>{t.footer.services}</span><p>{t.footer.serviceItems.map((item, index) => <>{index > 0 && <br />}{item}</>)}</p></div><div><span>{t.footer.contact}</span><p>hello@prasetyawebworks.com<br />Indonesia</p></div><nav aria-label="Footer navigation">{links.map((link) => <a href={`${home}${link.hash}`}>{link.label}</a>)}</nav></div>
+	<div class="footer-bottom"><span>© {new Date().getFullYear()} Prasetya Webworks. {t.footer.rights}</span><a href="#top">{t.footer.back} ↑</a></div>
+</footer>
+
+<style>
+	.site-footer { padding:3.5rem clamp(1.25rem,5vw,5rem) 1.5rem; color:#fff; background:#10131d; border-top:5px solid var(--blue); }.footer-main { display:grid; grid-template-columns:1.4fr 1fr 1fr auto; gap:3rem; }.footer-brand { display:flex; align-items:flex-start; }.footer-brand img { width:138px; height:auto; display:block; filter:invert(1); }.footer-main span { display:block; margin-bottom:.65rem; color:#7590ff; font-size:.58rem; letter-spacing:.15em; text-transform:uppercase; }.footer-main p { margin:0; color:#b4b8c7; font-size:.72rem; line-height:1.7; }.footer-main nav { display:grid; gap:.7rem; }.footer-main nav a { color:#b4b8c7; font-size:.68rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }.footer-main nav a:hover,.footer-bottom a:hover { color:#fff; }.footer-bottom { margin-top:3rem; padding-top:1.3rem; display:flex; justify-content:space-between; gap:2rem; color:#71788e; border-top:1px solid #2b3142; font-size:.62rem; }.footer-bottom a { color:#9eb3ff; text-decoration:none; }
+	@media (max-width:1000px) { .footer-main { grid-template-columns:1fr 1fr; } }
+	@media (max-width:560px) { .footer-main { grid-template-columns:1fr; }.footer-bottom { flex-direction:column; } }
+</style>

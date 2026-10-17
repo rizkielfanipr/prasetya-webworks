@@ -24,8 +24,8 @@ export const interleaveByCategory = (items: TemplateItem[]) => {
 export const homePath = (locale: Locale) => (locale === 'id' ? '/' : '/en/');
 
 export const catalogPath = (locale: Locale, category?: TemplateCategory) =>
-	`${locale === 'id' ? '/template/' : '/en/templates/'}${category ? `${category}/` : ''}`;
+	`${locale === 'id' ? '' : '/en'}/templates/${category ? `${category}/` : ''}`;
 
 /** Sends the visitor to the home contact form, which pre-fills the message from these params. */
 export const templateRequestPath = (locale: Locale, item: TemplateItem) =>
-	`${homePath(locale)}?${new URLSearchParams({ template: item.code, name: item.name })}#kontak`;
+	`${homePath(locale)}?${new URLSearchParams({ template: item.code, name: item.name })}#contact`;

@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import SiteFooter from './SiteFooter.astro';
 import TemplateCard from './TemplateCard.astro';
 import { content, type Locale } from '../i18n/content';
 import { catalogPath, homePath, interleaveByCategory, templateCategories, templateRequestPath, templatesIn, type TemplateCategory } from '../data/templates';
@@ -29,11 +30,11 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.
 	description={c.description}
 	alternates={{ id: catalogPath('id', category), en: catalogPath('en', category) }}
 >
-	<header class="catalog-header">
+	<header class="catalog-header" id="top">
 		<a class="brand" href={home} aria-label={`Prasetya Webworks — ${c.home}`}><img src="/images/prasetya-webworks-logo.png" alt="Prasetya Webworks" width="260" height="90" /></a>
 		<div class="header-actions">
 			<nav class="language-switcher" aria-label="Language">{languages.map((language, index) => <>{index > 0 && <span aria-hidden="true">/</span>}<a class:list={{ active: language.active }} href={language.href} aria-current={language.active ? 'page' : undefined}>{language.label}</a></>)}</nav>
-			<a class="header-cta" href={`${home}#kontak`}><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a>
+			<a class="header-cta" href={`${home}#contact`}><i class="fa-brands fa-whatsapp" aria-hidden="true"></i><span>{t.nav.consultation}</span></a>
 		</div>
 	</header>
 
@@ -57,23 +58,11 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.
 		<section class="catalog-cta" aria-labelledby="catalog-cta-title">
 			<h2 id="catalog-cta-title">{c.ctaTitle}</h2>
 			<p>{c.ctaText}</p>
-			<a href={`${home}#kontak`}>{t.hero.primary} <span aria-hidden="true">↗</span></a>
+			<a href={`${home}#contact`}>{t.hero.primary} <span aria-hidden="true">↗</span></a>
 		</section>
 	</main>
 
-	<footer class="catalog-footer">
-		<span>© {new Date().getFullYear()} Prasetya Webworks. {t.footer.rights}</span>
-		<a href={home}>{c.home} ↑</a>
-	</footer>
-
-	<script>
-		// On narrow screens the filter row scrolls sideways; bring the current category into view.
-		const filterRow = document.querySelector<HTMLElement>('.catalog-filters');
-		const currentFilter = filterRow?.querySelector<HTMLElement>('[aria-current]');
-		if (filterRow && currentFilter && filterRow.scrollWidth > filterRow.clientWidth) {
-			filterRow.scrollLeft = currentFilter.offsetLeft - filterRow.offsetLeft - (filterRow.clientWidth - currentFilter.offsetWidth) / 2;
-		}
-	</script>
+	<SiteFooter locale={locale} home={home} />
 </Layout>
 
 <style>
@@ -89,9 +78,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({ code, label: code.
 	.catalog-filters { margin-bottom:2rem; display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem; }.catalog-filter { flex:none; padding:.6rem .95rem; display:inline-flex; align-items:center; gap:.45rem; color:var(--ink); background:rgba(255,253,248,.78); border:1px solid var(--line); border-radius:999px; font-size:.68rem; letter-spacing:.03em; text-decoration:none; transition:background .2s,border-color .2s,color .2s; }.catalog-filter:hover { border-color:var(--blue); }.catalog-filter[aria-current] { color:#fff; background:var(--blue); border-color:var(--blue); }
 	.catalog-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.3rem; }
 	.catalog-cta { margin-top:4rem; padding:clamp(2rem,5vw,3.2rem); color:#fff; background:linear-gradient(135deg,#10131d,var(--blue-deep)); border-radius:28px; text-align:center; }.catalog-cta h2 { margin:0; font-family:Georgia,serif; font-size:clamp(1.6rem,3vw,2.2rem); font-weight:400; }.catalog-cta p { max-width:520px; margin:.8rem auto 1.6rem; color:#c5cbe0; font-size:.8rem; line-height:1.6; }.catalog-cta a { padding:.95rem 1.4rem; display:inline-flex; gap:1rem; color:var(--ink); background:#fff; border-radius:999px; font-size:.66rem; letter-spacing:.08em; text-decoration:none; text-transform:uppercase; }.catalog-cta a:hover { background:var(--blue-soft); }
-	.catalog-footer { padding:1.5rem clamp(1.25rem,5vw,5rem); display:flex; justify-content:space-between; gap:2rem; color:#71788e; background:#10131d; border-top:5px solid var(--blue); font-size:.62rem; }.catalog-footer a { color:#9eb3ff; text-decoration:none; }.catalog-footer a:hover { color:#fff; }
 	.catalog-filter:focus-visible,.catalog-cta a:focus-visible,.header-cta:focus-visible,.breadcrumb a:focus-visible { outline:3px solid var(--blue-soft); outline-offset:2px; }
 	@media (max-width:1000px) { .catalog-grid { grid-template-columns:repeat(2,1fr); } }
-	@media (max-width:800px) { .catalog-filters { flex-wrap:nowrap; justify-content:flex-start; overflow-x:auto; padding-bottom:.4rem; scrollbar-width:none; }.catalog-filters::-webkit-scrollbar { display:none; } }
-	@media (max-width:560px) { .catalog-header { height:66px; }.brand { width:115px; }.header-cta span { display:none; }.header-cta { padding:.7rem; }.catalog-grid { grid-template-columns:1fr; }.catalog-intro { margin-top:2rem; }.catalog-footer { flex-direction:column; gap:.6rem; } }
+	@media (max-width:560px) { .catalog-filters { gap:.4rem; }.catalog-filter { padding:.5rem .8rem; font-size:.64rem; }.catalog-header { height:66px; }.brand { width:115px; }.header-cta span { display:none; }.header-cta { padding:.7rem; }.catalog-grid { grid-template-columns:1fr; }.catalog-intro { margin-top:2rem; } }
 </style>
