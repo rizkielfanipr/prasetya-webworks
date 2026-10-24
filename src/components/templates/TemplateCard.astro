@@ -1,16 +1,15 @@
 ---
 import { content, type Locale } from '../../i18n/content';
 import { livePreviewUrl, type TemplateCategory, type TemplateItem } from '../../data/templates';
+import { whatsappUrl } from '../../scripts/whatsapp';
 
 interface Props {
 	item: TemplateItem;
 	locale: Locale;
-	/** Link target for the select action; without it the card renders a button handled by page script. */
-	href?: string;
 	hidden?: boolean;
 }
 
-const { item, locale, href, hidden = false } = Astro.props;
+const { item, locale, hidden = false } = Astro.props;
 const t = content[locale].templatesIntro;
 const request = t.request.replace('{code}', item.code).replace('{name}', item.name);
 const preview = livePreviewUrl(item);
@@ -50,15 +49,10 @@ const preview = livePreviewUrl(item);
 					{t.livePreview} <span aria-hidden="true">↗</span>
 				</a>
 			)}
-			{href ? (
-				<a class="template-select" href={href}>
-					{t.select} <span aria-hidden="true">↗</span>
-				</a>
-			) : (
-				<button class="template-select" type="button" data-template-request={request}>
-					{t.select} <span aria-hidden="true">↗</span>
-				</button>
-			)}
+			{/* "Choose template" opens WhatsApp with the template code and name already written. */}
+			<a class="template-select" href={whatsappUrl(request)} target="_blank" rel="noopener">
+				{t.select} <span aria-hidden="true">↗</span>
+			</a>
 		</div>
 	</div>
 </article>
@@ -68,8 +62,8 @@ const preview = livePreviewUrl(item);
 		overflow: hidden;
 		background: var(--paper);
 		border: 1px solid var(--line);
-		border-radius: 20px;
-		box-shadow: 0 10px 28px rgba(35, 43, 80, 0.05);
+		border-radius: var(--radius);
+		box-shadow: none;
 		transition:
 			transform 0.25s,
 			box-shadow 0.25s;
@@ -77,7 +71,8 @@ const preview = livePreviewUrl(item);
 
 	.template-card:hover {
 		transform: translateY(-6px);
-		box-shadow: 0 24px 45px rgba(25, 36, 80, 0.14);
+		border-color: rgba(255, 81, 0, 0.48);
+		box-shadow: 0 16px 32px rgba(120, 55, 20, 0.1);
 	}
 
 	.template-card[hidden] {
@@ -88,8 +83,8 @@ const preview = livePreviewUrl(item);
 		position: relative;
 		aspect-ratio: 16 / 10;
 		overflow: hidden;
-		background: #e7ebfa;
-		border-radius: 17px 17px 0 0;
+		background: var(--secondary);
+		border-radius: calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0 0;
 	}
 
 	.template-screen img {
@@ -125,7 +120,7 @@ const preview = livePreviewUrl(item);
 		padding: 0.2rem 0.5rem;
 		color: #fff;
 		background: rgba(17, 19, 26, 0.62);
-		border-radius: 999px;
+		border-radius: 8px;
 		font-size: 0.58rem;
 		letter-spacing: 0.06em;
 	}
@@ -173,7 +168,7 @@ const preview = livePreviewUrl(item);
 		display: inline-flex;
 		gap: 0.6rem;
 		border: 1px solid var(--blue);
-		border-radius: 999px;
+		border-radius: 12px;
 		font: inherit;
 		font-size: 0.62rem;
 		letter-spacing: 0.08em;
@@ -192,12 +187,12 @@ const preview = livePreviewUrl(item);
 	}
 
 	.template-select:hover {
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 	}
 
 	.template-preview {
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 	}
 

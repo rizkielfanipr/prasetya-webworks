@@ -97,7 +97,7 @@ const items = shown.flatMap((n, index) => (index > 0 && n - shown[index - 1] > 1
 		color: var(--ink);
 		background: var(--paper);
 		border: 1px solid var(--line);
-		border-radius: 999px;
+		border-radius: 12px;
 		font-size: 0.68rem;
 		letter-spacing: 0.04em;
 		text-decoration: none;
@@ -118,7 +118,7 @@ const items = shown.flatMap((n, index) => (index > 0 && n - shown[index - 1] > 1
 	}
 
 	.pager-number[aria-current] {
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 		border-color: var(--blue);
 	}

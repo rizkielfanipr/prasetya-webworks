@@ -7,106 +7,163 @@ interface Props {
 }
 
 const t = content[Astro.props.locale];
+const intro = t.pricingIntro;
+
+const packages = t.packages.map((item) => ({
+	...item,
+	popular: 'popular' in item && item.popular,
+	// Domain and hosting come first so every card reads the same way.
+	included: [intro.domain.replace('{domains}', item.domains.join(' / ')), intro.hosting, ...item.features],
+}));
 ---
 
 <section class="pricing section-pad" id="packages" aria-labelledby="pricing-title">
 	<SectionIntro
 		id="pricing-title"
-		title={t.pricingIntro.title}
-		emphasis={t.pricingIntro.emphasis}
-		description={t.pricingIntro.description}
+		layout="split"
+		eyebrow={intro.eyebrow}
+		title={intro.title}
+		emphasis={intro.emphasis}
+		description={intro.description}
 	/>
 	<div class="pricing-grid">
-		{t.packages.map((item) => (
-			<article class:list={['pricing-card', { featured: 'featured' in item && item.featured }]}>
-				<div>
-					<h3>{item.name}</h3>
-					<p>{item.tagline}</p>
-				</div>
+		{packages.map((item) => (
+			<article class:list={['pricing-card', { popular: item.popular }]}>
+				{item.popular && <p class="pricing-badge">{intro.popular}</p>}
+				<h3>{item.name}</h3>
+				<p class="pricing-tagline">{item.tagline}</p>
+				<p class="pricing-price">{item.price}</p>
 				<ul>
-					{item.features.map((feature) => (
+					{item.included.map((feature) => (
 						<li>
 							<span aria-hidden="true">✓</span>
 							{feature}
 						</li>
 					))}
 				</ul>
+				<dl class="pricing-meta">
+					<div>
+						<dt>{intro.revisions}</dt>
+						<dd>{item.revisions}</dd>
+					</div>
+					<div>
+						<dt>{intro.estimate}</dt>
+						<dd>{item.estimate}</dd>
+					</div>
+				</dl>
 				{/* Opens PackageModal with this package's details. */}
 				<button
 					class="package-select"
 					type="button"
 					data-package-select
-					data-package-name={item.name}
-					data-package-tagline={item.tagline}
-					data-package-features={JSON.stringify(item.features)}
+					data-package={JSON.stringify({
+						name: item.name,
+						price: item.price,
+						tagline: item.tagline,
+						features: item.included,
+						domains: item.domains,
+						revisions: item.revisions,
+						estimate: item.estimate,
+					})}
 				>
-					{t.pricingIntro.select} <span aria-hidden="true">↗</span>
+					{intro.select} <span aria-hidden="true">↗</span>
 				</button>
 			</article>
 		))}
+	</div>
+	<div class="pricing-terms">
+		<h3>{intro.termsTitle}</h3>
+		<ul>
+			{intro.terms.map((term) => (
+				<li>{term}</li>
+			))}
+		</ul>
 	</div>
 </section>
 
 <style>
 	.pricing {
-		background:
-			radial-gradient(circle at 90% 25%, rgba(158, 179, 255, 0.38), transparent 30%),
-			linear-gradient(180deg, #e9edff 0%, #e7ebff 68%, #eeeef3 88%, var(--ivory) 100%);
+		background: var(--card);
 	}
 
 	.pricing-grid {
 		max-width: 1320px;
 		margin: auto;
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: 1rem;
 	}
 
 	.pricing-card {
-		min-height: 410px;
+		position: relative;
 		padding: 1.6rem;
 		display: flex;
 		flex-direction: column;
 		color: var(--ink);
-		background: rgba(255, 253, 248, 0.92);
-		border: 1px solid rgba(23, 58, 155, 0.18);
-		border-radius: 24px;
-		box-shadow: 0 12px 30px rgba(35, 43, 80, 0.05);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
 	}
 
-	.pricing-card.featured {
-		color: #fff;
-		background: linear-gradient(155deg, #2149b8, #0b2368);
-		border-color: var(--blue);
-		box-shadow: 0 22px 45px rgba(23, 58, 155, 0.3);
-		transform: translateY(-10px);
+	.pricing-card.popular {
+		background: linear-gradient(180deg, var(--secondary) 0%, var(--card) 55%);
+		border-color: var(--primary);
+		box-shadow: 0 0 0 1px var(--primary);
+	}
+
+	.pricing-badge {
+		position: absolute;
+		top: 0;
+		left: 1.6rem;
+		margin: 0;
+		padding: 0.3rem 0.75rem;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border-radius: 8px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		line-height: 1.33;
+		text-transform: uppercase;
+		transform: translateY(-50%);
 	}
 
 	.pricing-card h3 {
-		margin: 0 0 0.8rem;
-		font-family: var(--font-serif);
-		font-size: 1.7rem;
-		font-weight: 400;
-	}
-
-	.pricing-card p {
 		margin: 0;
-		color: var(--muted);
-		font-size: 0.78rem;
-		line-height: 1.55;
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		line-height: 1.25;
 	}
 
-	.featured p {
-		color: #dce4ff;
+	.pricing-tagline {
+		min-height: 2.6em;
+		margin: 0.5rem 0 0;
+		color: var(--muted);
+		font-size: 0.8rem;
+		line-height: 1.6;
+	}
+
+	.pricing-price {
+		margin: 1.25rem 0 0;
+		padding-bottom: 1.25rem;
+		color: var(--foreground);
+		border-bottom: 1px solid var(--border);
+		font-family: var(--font-display);
+		font-size: clamp(1.75rem, 2.4vw, 2.1rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.1;
 	}
 
 	.pricing-card ul {
-		margin: 1.7rem 0;
+		margin: 1.25rem 0;
 		padding: 0;
 		display: grid;
-		gap: 0.78rem;
+		gap: 0.7rem;
 		list-style: none;
-		font-size: 0.73rem;
+		font-size: 0.8rem;
 		line-height: 1.45;
 	}
 
@@ -116,25 +173,44 @@ const t = content[Astro.props.locale];
 	}
 
 	.pricing-card li span {
-		color: var(--blue);
+		color: var(--primary);
+		font-weight: 700;
 	}
 
-	.featured li span {
-		color: #fff;
+	.pricing-meta {
+		margin: auto 0 1.25rem;
+		padding: 0.85rem 1rem;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+		background: var(--background);
+		border-radius: 12px;
+	}
+
+	.pricing-meta dt {
+		color: var(--muted);
+		font-size: 0.68rem;
+		font-weight: 600;
+	}
+
+	.pricing-meta dd {
+		margin: 0.15rem 0 0;
+		color: var(--foreground);
+		font-size: 0.8rem;
+		font-weight: 700;
 	}
 
 	.package-select {
 		width: 100%;
-		margin-top: auto;
 		padding: 0.85rem 0.95rem;
 		display: flex;
 		justify-content: space-between;
 		color: var(--blue-deep);
 		background: transparent;
-		border: 1px solid rgba(23, 58, 155, 0.45);
-		border-radius: 999px;
+		border: 1px solid rgba(255, 81, 0, 0.45);
+		border-radius: 12px;
 		cursor: pointer;
-		font-size: 0.59rem;
+		font-size: 0.68rem;
 		font-weight: 700;
 		letter-spacing: 0.09em;
 		text-transform: uppercase;
@@ -145,10 +221,11 @@ const t = content[Astro.props.locale];
 		outline-offset: 3px;
 	}
 
-	.featured .package-select {
-		color: var(--blue-deep);
-		background: #fff;
-		border-color: #fff;
+	.popular .package-select {
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border-color: var(--primary);
+		box-shadow: var(--brand-shadow);
 	}
 
 	.package-select span {
@@ -159,15 +236,59 @@ const t = content[Astro.props.locale];
 		transform: translate3d(3px, -2px, 0);
 	}
 
+	.pricing-terms {
+		max-width: 1320px;
+		margin: 2rem auto 0;
+		padding: 1.4rem 1.6rem;
+		background: var(--background);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.pricing-terms h3 {
+		margin: 0 0 0.75rem;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+
+	.pricing-terms ul {
+		margin: 0;
+		padding-left: 1.1rem;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.5rem 2.5rem;
+		color: var(--muted);
+		font-size: 0.78rem;
+		line-height: 1.6;
+	}
+
 	@media (max-width: 1000px) {
 		.pricing-grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 1.75rem 1rem;
+		}
+	}
+
+	@media (max-width: 800px) {
+		.pricing-terms ul {
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 
 	@media (max-width: 560px) {
 		.pricing-grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.pricing-card,
+		.pricing-terms {
+			padding: 1.4rem 1.25rem;
+		}
+
+		.pricing-tagline {
+			min-height: 0;
 		}
 	}
 

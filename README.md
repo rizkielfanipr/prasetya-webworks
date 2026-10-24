@@ -50,7 +50,7 @@ src/
   i18n/              Semua teks UI dalam Bahasa Indonesia dan Inggris
   layouts/           Kerangka HTML
   pages/             Rute (file-based routing Astro), hanya meneruskan ke komponen halaman
-  scripts/           Modul JS bersama (reveal, mailto, form kontak, motion)
+  scripts/           Modul JS bersama (reveal, WhatsApp, motion)
   styles/            global.css: design token, gaya dasar, utilitas
 ```
 

@@ -2,7 +2,22 @@
 export const site = {
 	name: 'Prasetya Webworks',
 	email: 'hello@prasetyawebworks.com',
-	logo: '/images/prasetya-webworks-logo.png',
+	/** WhatsApp number that receives package orders, international format without "+". Placeholder: replace before deploying. */
+	whatsapp: '6281234567890',
+	/** Logo for light backgrounds, and the white-text version for dark ones (see docs/design.md). */
+	logo: '/images/prasetya-webworks-logo.svg',
+	logoOnDark: '/images/prasetya-webworks-logo-white.svg',
+	/** 1200×630 preview image for search results and shared links (Open Graph). */
+	ogImage: '/images/og-image.png',
+	/** Square raster logo for structured data; Google does not use the SVG wordmark there. */
+	logoSquare: '/favicon.png',
+	/** Social profiles shown in the footer, in this order. Placeholders: replace with the real profile URLs before deploying. */
+	social: [
+		{ network: 'Instagram', icon: 'fa-instagram', url: 'https://www.instagram.com/' },
+		{ network: 'TikTok', icon: 'fa-tiktok', url: 'https://www.tiktok.com/' },
+		{ network: 'Facebook', icon: 'fa-facebook-f', url: 'https://www.facebook.com/' },
+		{ network: 'LinkedIn', icon: 'fa-linkedin-in', url: 'https://www.linkedin.com/' },
+	],
 	/** WordPress Multisite that hosts the live template demos (see docs/wordpress-preview.md). */
 	previewBaseUrl: 'https://preview.prasetyawebworks.web.id',
 } as const;

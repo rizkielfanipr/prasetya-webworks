@@ -12,5 +12,5 @@ Membangun website dengan **Astro dalam mode output statis**. Semua halaman, term
 ## Konsekuensi
 - ✅ Cepat, murah, aman (tidak ada server aplikasi atau database), dan cocok dengan shared hosting.
 - ✅ Bisa dipindah ke hosting statis apa pun tanpa mengubah kode.
-- ⚠️ Fitur dinamis (form, pengecek domain, dan sejenisnya) butuh layanan terpisah: script PHP kecil di hosting yang sama, layanan pihak ketiga, atau serverless. Saat ini form memakai `mailto:`.
+- ⚠️ Fitur dinamis (form, pengecek domain, dan sejenisnya) butuh layanan terpisah: script PHP kecil di hosting yang sama, layanan pihak ketiga, atau serverless. Saat ini semua kontak dan pemesanan memakai tautan `wa.me` (ADR 0010).
 - ⚠️ Setiap perubahan konten butuh build dan deploy, yang sudah otomatis lewat CI ([0002](0002-deploy-ssh-rsync.md)).

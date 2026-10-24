@@ -1,11 +1,12 @@
 ---
 import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
 
 interface Props {
 	locale: Locale;
 }
 
-const { modal: t, status } = content[Astro.props.locale];
+const { modal: t } = content[Astro.props.locale];
 ---
 
 <dialog class="package-modal" id="package-modal" aria-labelledby="package-modal-title">
@@ -14,49 +15,82 @@ const { modal: t, status } = content[Astro.props.locale];
 			×
 		</button>
 		<section class="package-summary" aria-label={t.detail}>
-			<h2 id="package-modal-title" data-modal-package-name>
-				Essential
-			</h2>
+			<h2 id="package-modal-title" data-modal-package-name></h2>
+			<p class="package-summary-price" data-modal-package-price></p>
 			<p class="package-summary-copy" data-modal-package-tagline></p>
 			<div class="summary-divider"></div>
 			<p class="summary-title">{t.included}</p>
 			<ul data-modal-package-features></ul>
-			<p class="summary-note">{t.note}</p>
+			{/* Radios live here but belong to the order form through the form attribute. */}
+			<fieldset class="domain-choice">
+				<legend class="summary-title">{t.domainChoice}</legend>
+				<div class="domain-options" data-modal-domains></div>
+			</fieldset>
+			<ul class="summary-notes">
+				<li>{t.hosting}</li>
+				<li>{t.renewal}</li>
+				<li data-modal-revisions data-template={t.revisions}></li>
+				<li data-modal-estimate data-template={t.estimate}></li>
+			</ul>
 		</section>
 		<form
 			class="package-order-form"
 			id="package-order-form"
-			data-subject={status.packageSubject}
-			data-package-label={status.package}
-			data-name-label={status.name}
-			data-business-label={status.business}
-			data-needs-label={status.needs}
-			data-sent-status={status.email}
+			data-greeting={t.summary.greeting.replace('{site}', site.name)}
+			data-package-label={t.summary.package}
+			data-price-label={t.summary.price}
+			data-name-label={t.summary.name}
+			data-business-label={t.summary.business}
+			data-domain-label={t.summary.domain}
+			data-email-label={t.summary.email}
+			data-whatsapp-label={t.summary.whatsapp}
+			data-notes-label={t.summary.notes}
+			data-sent-status={t.sent}
 		>
 			<h2>{t.title}</h2>
 			<p>{t.description}</p>
-			<input type="hidden" name="package" data-package-input />
 			<div class="field-row">
 				<label>
 					{t.name}
-					<input name="name" type="text" placeholder={t.namePlaceholder} required />
+					<input name="name" type="text" autocomplete="name" placeholder={t.namePlaceholder} required />
 				</label>
 				<label>
 					{t.whatsapp}
-					<input name="whatsapp" type="tel" placeholder="08xxxxxxxxxx" required />
+					<input name="whatsapp" type="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required />
 				</label>
 			</div>
 			<label>
 				{t.email}
-				<input name="email" type="email" placeholder="nama@email.com" required />
+				<input name="email" type="email" autocomplete="email" placeholder="nama@email.com" required />
 			</label>
 			<label>
-				{t.business} <span>{t.optional}</span>
-				<input name="business" type="text" placeholder={t.businessPlaceholder} />
+				{t.business}
+				<input name="business" type="text" autocomplete="organization" placeholder={t.businessPlaceholder} required />
 			</label>
 			<label>
-				{t.needs}
-				<textarea name="message" rows="4" placeholder={t.needsPlaceholder} required></textarea>
+				{t.domain}
+				<span class="domain-input">
+					<input
+						name="domain"
+						type="text"
+						inputmode="url"
+						autocapitalize="none"
+						spellcheck="false"
+						placeholder={t.domainPlaceholder}
+						required
+					/>
+					<span aria-hidden="true" data-domain-suffix></span>
+				</span>
+			</label>
+			<label>
+				<span class="label-text">
+					{t.notes} <span>{t.optional}</span>
+				</span>
+				<textarea name="notes" rows="3" placeholder={t.notesPlaceholder}></textarea>
+			</label>
+			<label class="consent">
+				<input name="consent" type="checkbox" required />
+				<span>{t.consent}</span>
 			</label>
 			<button class="order-submit" type="submit">
 				{t.submit} <span aria-hidden="true">↗</span>
@@ -67,24 +101,55 @@ const { modal: t, status } = content[Astro.props.locale];
 </dialog>
 
 <script>
-	import { openMailto } from '../../scripts/mailto';
+	import { openWhatsApp } from '../../scripts/whatsapp';
+
+	interface SelectedPackage {
+		name: string;
+		price: string;
+		tagline: string;
+		features: string[];
+		domains: string[];
+		revisions: string;
+		estimate: string;
+	}
 
 	const modal = document.querySelector<HTMLDialogElement>('#package-modal');
 	const form = document.querySelector<HTMLFormElement>('#package-order-form');
 	const name = modal?.querySelector<HTMLElement>('[data-modal-package-name]');
+	const price = modal?.querySelector<HTMLElement>('[data-modal-package-price]');
 	const tagline = modal?.querySelector<HTMLElement>('[data-modal-package-tagline]');
 	const features = modal?.querySelector<HTMLUListElement>('[data-modal-package-features]');
-	const packageInput = modal?.querySelector<HTMLInputElement>('[data-package-input]');
+	const domains = modal?.querySelector<HTMLElement>('[data-modal-domains]');
+	const revisions = modal?.querySelector<HTMLElement>('[data-modal-revisions]');
+	const estimate = modal?.querySelector<HTMLElement>('[data-modal-estimate]');
+	const suffix = modal?.querySelector<HTMLElement>('[data-domain-suffix]');
+	let selected: SelectedPackage | undefined;
 
-	// "Choose package" buttons in PricingSection carry the package details as data attributes.
+	function domainOption(extension: string, checked: boolean) {
+		const label = document.createElement('label');
+		const radio = document.createElement('input');
+		Object.assign(radio, { type: 'radio', name: 'extension', value: extension, checked, required: true });
+		radio.setAttribute('form', 'package-order-form');
+		radio.addEventListener('change', () => {
+			if (suffix) suffix.textContent = extension;
+		});
+		label.append(radio, extension);
+		return label;
+	}
+
+	// "Choose package" buttons in PricingSection carry the package details as JSON in data-package.
 	document.querySelectorAll<HTMLButtonElement>('[data-package-select]').forEach((button) =>
 		button.addEventListener('click', () => {
-			const selected = button.dataset;
-			if (name) name.textContent = selected.packageName ?? '';
-			if (tagline) tagline.textContent = selected.packageTagline ?? '';
-			if (packageInput) packageInput.value = selected.packageName ?? '';
+			selected = JSON.parse(button.dataset.package ?? '{}') as SelectedPackage;
+			if (name) name.textContent = selected.name;
+			if (price) price.textContent = selected.price;
+			if (tagline) tagline.textContent = selected.tagline;
+			if (revisions) revisions.textContent = (revisions.dataset.template ?? '').replace('{count}', selected.revisions);
+			if (estimate) estimate.textContent = (estimate.dataset.template ?? '').replace('{estimate}', selected.estimate);
+			if (suffix) suffix.textContent = selected.domains[0] ?? '';
+			domains?.replaceChildren(...selected.domains.map((extension, index) => domainOption(extension, index === 0)));
 			features?.replaceChildren(
-				...(JSON.parse(selected.packageFeatures ?? '[]') as string[]).map((feature) => {
+				...selected.features.map((feature) => {
 					const item = document.createElement('li');
 					const check = document.createElement('span');
 					check.setAttribute('aria-hidden', 'true');
@@ -104,12 +169,30 @@ const { modal: t, status } = content[Astro.props.locale];
 
 	form?.addEventListener('submit', (event) => {
 		event.preventDefault();
+		if (!selected) return;
 		const data = new FormData(form);
 		const label = form.dataset;
-		openMailto(
-			`${label.subject} ${data.get('package') ?? ''}`,
-			`${label.packageLabel}: ${data.get('package')}\n${label.nameLabel}: ${data.get('name')}\nWhatsApp: ${data.get('whatsapp')}\nEmail: ${data.get('email')}\n${label.businessLabel}: ${data.get('business') || '-'}\n\n${label.needsLabel}:\n${data.get('message')}`,
-		);
+		// Keep only the name part; the extension comes from the chosen radio.
+		const domainName = String(data.get('domain'))
+			.trim()
+			.toLowerCase()
+			.replace(/\s+/g, '')
+			.replace(/^https?:\/\//, '')
+			.replace(/^www\./, '')
+			.split('.')[0];
+		const lines = [
+			label.greeting,
+			'',
+			`${label.packageLabel}: ${selected.name}`,
+			`${label.priceLabel}: ${selected.price}`,
+			`${label.nameLabel}: ${data.get('name')}`,
+			`${label.businessLabel}: ${data.get('business')}`,
+			`${label.domainLabel}: ${domainName}${data.get('extension') ?? ''}`,
+			`${label.emailLabel}: ${data.get('email')}`,
+			`${label.whatsappLabel}: ${data.get('whatsapp')}`,
+			`${label.notesLabel}: ${String(data.get('notes')).trim() || '-'}`,
+		];
+		openWhatsApp(lines.join('\n'));
 		const status = form.querySelector<HTMLElement>('.order-status');
 		if (status) status.textContent = label.sentStatus ?? '';
 	});
@@ -124,12 +207,12 @@ const { modal: t, status } = content[Astro.props.locale];
 		color: var(--ink);
 		background: transparent;
 		border: 0;
-		border-radius: 28px;
-		box-shadow: 0 32px 90px rgba(8, 15, 45, 0.3);
+		border-radius: var(--radius);
+		box-shadow: 0 32px 90px rgba(90, 35, 10, 0.24);
 	}
 
 	.package-modal::backdrop {
-		background: rgba(7, 10, 24, 0.76);
+		background: rgba(15, 23, 42, 0.62);
 		backdrop-filter: blur(9px);
 	}
 
@@ -141,7 +224,7 @@ const { modal: t, status } = content[Astro.props.locale];
 		overflow: hidden;
 		background: var(--paper);
 		border: 1px solid rgba(255, 255, 255, 0.35);
-		border-radius: 28px;
+		border-radius: var(--radius);
 	}
 
 	.modal-close {
@@ -170,10 +253,10 @@ const { modal: t, status } = content[Astro.props.locale];
 
 	.package-summary {
 		padding: clamp(2.2rem, 4vw, 4rem);
-		color: #fff;
+		color: var(--foreground);
 		background:
-			radial-gradient(circle at 12% 82%, rgba(122, 145, 220, 0.34), transparent 34%),
-			linear-gradient(150deg, #2149b8 0%, #0b2368 70%, #07163f 100%);
+			radial-gradient(circle at 12% 82%, rgba(255, 81, 0, 0.2), transparent 34%),
+			linear-gradient(150deg, #fff3ea 0%, #ffe2cf 70%, #ffd1b4 100%);
 	}
 
 	.package-summary h2,
@@ -185,26 +268,37 @@ const { modal: t, status } = content[Astro.props.locale];
 	}
 
 	.package-summary h2 {
-		font-size: clamp(2.6rem, 5vw, 4.8rem);
+		font-size: clamp(2.2rem, 3.6vw, 3.4rem);
+		line-height: 1.05;
+	}
+
+	.package-summary-price {
+		margin: 0.9rem 0 0;
+		color: var(--primary);
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+		font-weight: 700;
+		letter-spacing: -0.03em;
+		line-height: 1.1;
 	}
 
 	.package-summary-copy {
 		max-width: 400px;
-		margin: 1rem 0 0;
-		color: #dce4ff;
+		margin: 0.8rem 0 0;
+		color: var(--muted);
 		font-size: 0.84rem;
 		line-height: 1.65;
 	}
 
 	.summary-divider {
 		height: 1px;
-		margin: 2.4rem 0 1.7rem;
-		background: rgba(255, 255, 255, 0.24);
+		margin: 1.8rem 0 1.5rem;
+		background: rgba(255, 81, 0, 0.18);
 	}
 
 	.summary-title {
 		margin: 0 0 1rem;
-		color: #dce4ff;
+		color: var(--muted);
 		font-size: 0.78rem;
 		font-weight: 600;
 		line-height: 1.5;
@@ -219,13 +313,14 @@ const { modal: t, status } = content[Astro.props.locale];
 		font-size: 0.77rem;
 	}
 
-	.package-summary li {
+	/* Feature items are created by the script below, so they need :global to get styles. */
+	.package-summary :global(li) {
 		display: flex;
 		gap: 0.75rem;
 		align-items: flex-start;
 	}
 
-	.package-summary li span {
+	.package-summary :global(li span) {
 		width: 19px;
 		height: 19px;
 		display: grid;
@@ -237,20 +332,64 @@ const { modal: t, status } = content[Astro.props.locale];
 		font-size: 0.58rem;
 	}
 
-	.summary-note {
-		margin: 2.5rem 0 0;
-		padding-top: 1.4rem;
-		color: #aebfff;
-		border-top: 1px solid rgba(255, 255, 255, 0.18);
-		font-size: 0.65rem;
+	.domain-choice {
+		margin: 1.8rem 0 0;
+		padding: 0;
+		border: 0;
+	}
+
+	.domain-options {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.domain-options :global(label) {
+		min-height: 36px;
+		padding: 0.45rem 0.9rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		cursor: pointer;
+		font-size: 0.78rem;
+		font-weight: 600;
+	}
+
+	.domain-options :global(label:has(input:checked)) {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 1px var(--primary);
+	}
+
+	.domain-options :global(input) {
+		margin: 0;
+		accent-color: var(--primary);
+	}
+
+	.package-summary .summary-notes {
+		margin: 1.8rem 0 0;
+		padding: 1.3rem 0 0 1rem;
+		display: grid;
+		gap: 0.45rem;
+		color: var(--muted);
+		border-top: 1px solid rgba(255, 81, 0, 0.18);
+		list-style: disc;
+		font-size: 0.7rem;
 		line-height: 1.6;
+	}
+
+	.package-summary .summary-notes li {
+		display: list-item;
 	}
 
 	.package-order-form {
 		padding: clamp(2.3rem, 4vw, 4rem);
 		display: flex;
 		flex-direction: column;
-		background: linear-gradient(145deg, #fffdf8, #f5f3ed);
+		background: linear-gradient(145deg, #ffffff, #fffaf4);
 	}
 
 	.package-order-form h2 {
@@ -277,7 +416,7 @@ const { modal: t, status } = content[Astro.props.locale];
 		letter-spacing: 0.035em;
 	}
 
-	.package-order-form label > span {
+	.label-text > span {
 		color: var(--muted);
 		font-weight: 400;
 	}
@@ -297,7 +436,56 @@ const { modal: t, status } = content[Astro.props.locale];
 	.package-order-form input:focus,
 	.package-order-form textarea:focus {
 		border-color: var(--blue);
-		box-shadow: 0 0 0 2px rgba(23, 58, 155, 0.14);
+		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+	}
+
+	.domain-input {
+		display: flex;
+		align-items: stretch;
+		background: rgba(255, 255, 255, 0.75);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+	}
+
+	.domain-input:focus-within {
+		border-color: var(--blue);
+		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+	}
+
+	.package-order-form .domain-input input {
+		min-width: 0;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.domain-input span {
+		padding: 0 0.85rem;
+		display: flex;
+		align-items: center;
+		color: var(--muted);
+		border-left: 1px solid var(--line);
+		font-size: 0.76rem;
+		font-weight: 600;
+	}
+
+	.package-order-form .consent {
+		margin: 0.2rem 0 1rem;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		line-height: 1.5;
+	}
+
+	.package-order-form .consent input {
+		width: 16px;
+		height: 16px;
+		margin: 0.1rem 0 0;
+		padding: 0;
+		flex: 0 0 16px;
+		accent-color: var(--primary);
 	}
 
 	.order-submit {
@@ -305,10 +493,11 @@ const { modal: t, status } = content[Astro.props.locale];
 		padding: 0.9rem 1.05rem;
 		display: flex;
 		justify-content: space-between;
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 		border: 0;
-		border-radius: 999px;
+		border-radius: var(--radius);
+		box-shadow: var(--brand-shadow);
 		cursor: pointer;
 		font-size: 0.59rem;
 		font-weight: 700;
@@ -356,7 +545,7 @@ const { modal: t, status } = content[Astro.props.locale];
 			padding: 2rem 1.25rem;
 		}
 		.package-summary h2 {
-			font-size: 2.7rem;
+			font-size: 2.1rem;
 		}
 		.package-order-form h2 {
 			font-size: 2rem;

@@ -1,55 +1,77 @@
 ---
 import { content, type Locale } from '../../i18n/content';
 import { site } from '../../config/site';
+import { navLinks } from '../../config/navigation';
+import { whatsappUrl } from '../../scripts/whatsapp';
 
 interface Props {
 	locale: Locale;
 	/** Prefix for the home section links; empty on the home page itself, e.g. "/" or "/en/" elsewhere. */
 	home?: string;
 	/** Show the "Mitra" link (only while the partners section is visible). */
-	showAbout?: boolean;
+	showPartners?: boolean;
 }
 
-const { locale, home = '', showAbout = false } = Astro.props;
+const { locale, home = '', showPartners = false } = Astro.props;
 const t = content[locale];
-const links = [
-	...(showAbout ? [{ hash: '#partners', label: t.nav.about }] : []),
-	{ hash: '#why-us', label: t.nav.services },
-	{ hash: '#packages', label: t.nav.packages },
-	{ hash: '#templates', label: t.nav.work },
-	{ hash: '#faq', label: t.nav.faq },
-];
+const links = navLinks(locale, showPartners);
+// 6281234567890 → +62 812-3456-7890
+const phone = site.whatsapp.replace(/^(\d{2})(\d{3})(\d{4})(\d+)$/, '+$1 $2-$3-$4');
 ---
 
 <footer class="site-footer">
 	<div class="footer-main">
 		<div class="footer-brand">
-			<img src={site.logo} alt={site.name} width="260" height="90" />
-		</div>
-		<div>
-			<span>{t.footer.services}</span>
-			<p>
-				{t.footer.serviceItems.map((item, index) => (
-					<>
-						{index > 0 && <br />}
-						{item}
-					</>
+			<img src={site.logoOnDark} alt={site.name} width="211" height="64" />
+			<p>{t.footer.tagline}</p>
+			<ul class="footer-social">
+				{site.social.map((profile) => (
+					<li>
+						<a
+							href={profile.url}
+							target="_blank"
+							rel="noopener"
+							aria-label={t.footer.social.replace('{network}', profile.network)}
+							title={profile.network}
+						>
+							<i class:list={['fa-brands', profile.icon]} aria-hidden="true"></i>
+						</a>
+					</li>
 				))}
-			</p>
+			</ul>
 		</div>
-		<div>
-			<span>{t.footer.contact}</span>
-			<p>
-				{site.email}
-				<br />
-				Indonesia
-			</p>
-		</div>
-		<nav aria-label="Footer navigation">
-			{links.map((link) => (
-				<a href={`${home}${link.hash}`}>{link.label}</a>
-			))}
+		<nav aria-labelledby="footer-menu-title">
+			<h2 id="footer-menu-title">{t.footer.menu}</h2>
+			<ul>
+				{links.map((link) => (
+					<li>
+						<a href={`${home}${link.hash}`}>{link.label}</a>
+					</li>
+				))}
+			</ul>
 		</nav>
+		<div>
+			<h2>{t.footer.contact}</h2>
+			<p class="footer-company">{site.name}</p>
+			<p>{t.footer.location}</p>
+			<ul class="footer-contact">
+				<li>
+					<a href={whatsappUrl(t.contact.message.replace('{site}', site.name))} target="_blank" rel="noopener">
+						<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+						{phone}
+					</a>
+				</li>
+				<li>
+					<a href={`mailto:${site.email}`}>
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<rect x="3" y="5" width="18" height="14" rx="2"></rect>
+							<path d="m4 7 8 6 8-6"></path>
+						</svg>
+						{site.email}
+					</a>
+				</li>
+			</ul>
+		</div>
 	</div>
 	<div class="footer-bottom">
 		<span>
@@ -61,92 +83,180 @@ const links = [
 
 <style>
 	.site-footer {
-		padding: 3.5rem clamp(1.25rem, 5vw, 5rem) 1.5rem;
-		color: #fff;
-		background: #10131d;
-		border-top: 5px solid var(--blue);
+		padding: clamp(3rem, 5vw, 4.5rem) clamp(1.5rem, 4vw, 2.5rem) 0;
+		color: rgba(255, 255, 255, 0.68);
+		background: var(--foreground);
+		border-top: 3px solid var(--primary);
+	}
+
+	.footer-main,
+	.footer-bottom {
+		max-width: 1320px;
+		margin: 0 auto;
 	}
 
 	.footer-main {
 		display: grid;
-		grid-template-columns: 1.4fr 1fr 1fr auto;
-		gap: 3rem;
-	}
-
-	.footer-brand {
-		display: flex;
-		align-items: flex-start;
+		grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr) minmax(0, 1fr);
+		gap: clamp(2rem, 5vw, 5rem);
 	}
 
 	.footer-brand img {
-		width: 138px;
+		width: 158px;
 		height: auto;
 		display: block;
-		filter: invert(1);
-	}
-
-	.footer-main span {
-		display: block;
-		margin-bottom: 0.65rem;
-		color: #7590ff;
-		font-size: 0.58rem;
-		letter-spacing: 0.15em;
-		text-transform: uppercase;
 	}
 
 	.footer-main p {
+		max-width: 340px;
 		margin: 0;
-		color: #b4b8c7;
-		font-size: 0.72rem;
+		font-size: 0.9rem;
 		line-height: 1.7;
 	}
 
-	.footer-main nav {
-		display: grid;
-		gap: 0.7rem;
+	.footer-brand p {
+		margin-top: 1.1rem;
 	}
 
-	.footer-main nav a {
-		color: #b4b8c7;
-		font-size: 0.68rem;
-		letter-spacing: 0.08em;
-		text-decoration: none;
+	.footer-main h2 {
+		margin: 0 0 1.25rem;
+		color: var(--primary-foreground);
+		font-family: var(--font-display);
+		font-size: 0.85rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
 		text-transform: uppercase;
 	}
 
-	.footer-main nav a:hover,
+	.footer-main ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.footer-main nav ul {
+		display: grid;
+		gap: 0.85rem;
+	}
+
+	.footer-main a {
+		color: inherit;
+		font-size: 0.9rem;
+		text-decoration: none;
+		transition: color 0.2s ease;
+	}
+
+	.footer-main a:hover,
 	.footer-bottom a:hover {
-		color: #fff;
+		color: var(--primary-foreground);
+	}
+
+	.footer-main .footer-social {
+		margin-top: 1.5rem;
+		display: flex;
+		gap: 0.65rem;
+	}
+
+	.footer-social a {
+		width: 38px;
+		height: 38px;
+		display: grid;
+		place-items: center;
+		border: 1px solid rgba(255, 255, 255, 0.24);
+		border-radius: 10px;
+		font-size: 1rem;
+		transition:
+			color 0.2s ease,
+			background-color 0.2s ease,
+			border-color 0.2s ease;
+	}
+
+	.footer-social a:hover {
+		background: var(--primary);
+		border-color: var(--primary);
+	}
+
+	.footer-main .footer-company {
+		margin-bottom: 0.35rem;
+		color: var(--primary-foreground);
+		font-weight: 600;
+	}
+
+	.footer-main .footer-contact {
+		margin-top: 1.1rem;
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	.footer-contact a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.7rem;
+		overflow-wrap: anywhere;
+	}
+
+	.footer-contact i,
+	.footer-contact svg {
+		width: 18px;
+		flex: 0 0 18px;
+		font-size: 1.05rem;
+		text-align: center;
+	}
+
+	.footer-contact svg {
+		height: 18px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.7;
+	}
+
+	.site-footer a:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
 	}
 
 	.footer-bottom {
-		margin-top: 3rem;
-		padding-top: 1.3rem;
+		margin-top: clamp(2.5rem, 5vw, 4rem);
+		padding: 1.4rem 0;
 		display: flex;
 		justify-content: space-between;
-		gap: 2rem;
-		color: #71788e;
-		border-top: 1px solid #2b3142;
-		font-size: 0.62rem;
+		gap: 1rem 2rem;
+		color: rgba(255, 255, 255, 0.5);
+		border-top: 1px solid rgba(255, 255, 255, 0.12);
+		font-size: 0.8rem;
 	}
 
 	.footer-bottom a {
-		color: #9eb3ff;
+		color: inherit;
 		text-decoration: none;
 	}
 
-	@media (max-width: 1000px) {
+	@media (max-width: 800px) {
 		.footer-main {
-			grid-template-columns: 1fr 1fr;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.footer-brand {
+			grid-column: 1 / -1;
 		}
 	}
 
 	@media (max-width: 560px) {
 		.footer-main {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
+
 		.footer-bottom {
+			/* Leaves room for the floating WhatsApp button. */
+			padding-bottom: 5.5rem;
 			flex-direction: column;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.footer-main a,
+		.footer-social a {
+			transition: none;
 		}
 	}
 </style>

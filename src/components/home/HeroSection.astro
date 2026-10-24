@@ -1,5 +1,7 @@
 ---
 import { content, type Locale } from '../../i18n/content';
+import Button from '../ui/Button.astro';
+import { roundedTemplateCount } from '../../data/templates';
 
 interface Props {
 	locale: Locale;
@@ -9,126 +11,137 @@ const t = content[Astro.props.locale].hero;
 ---
 
 <section class="hero">
-	<img
-		class="hero-visual"
-		src="/images/hero-studio-dark-v2.webp"
-		alt=""
-		width="1672"
-		height="941"
-		fetchpriority="high"
-		aria-hidden="true"
-	/>
-	<div class="hero-shade"></div>
-	<div class="hero-content">
-		<h1>
-			<span>
-				<strong>{t.lead}</strong>
-				{t.connector}
-			</span>
-			<span>
-				{t.secondLine}{' '}
-				<strong>
-					<em>{t.emphasis}</em>
-				</strong>
-			</span>
-		</h1>
-		<p class="hero-copy">{t.body}</p>
-		<div class="hero-actions">
-			<a class="button button-light" href="#contact">
-				{t.primary} <span>↗</span>
-			</a>
-			<a class="button button-outline" href="#templates">
-				{t.secondary} <span>↓</span>
-			</a>
+	<div class="hero-inner">
+		<div class="hero-content">
+			<p class="hero-eyebrow">{t.eyebrow}</p>
+			<h1>
+				<span class="hero-title-line">
+					<strong>{t.lead}</strong>
+					{t.connector}
+				</span>
+				<span class="hero-title-line">{t.secondLine}</span>
+				<span class="hero-title-line">
+					<strong>
+						<em>{t.emphasis}</em>
+					</strong>
+				</span>
+			</h1>
+			<div class="hero-price" aria-label={`${t.pricePrefix} ${t.price} — ${t.priceSuffix}`}>
+				<span class="hero-price-prefix">{t.pricePrefix}</span>
+				<strong>{t.price}</strong>
+				<span class="hero-price-suffix">{t.priceSuffix}</span>
+			</div>
+			<div class="hero-actions">
+				<Button class="hero-button" href="#contact">
+					{t.primary} <span>↗</span>
+				</Button>
+				<Button class="hero-button" variant="outline" href="#templates">
+					{t.secondary.replace('{count}', String(roundedTemplateCount()))} <span>↓</span>
+				</Button>
+			</div>
+		</div>
+		<div class="hero-art" aria-hidden="true">
+			<div class="hero-art-glow"></div>
+			<picture>
+				<source srcset="/images/hero-browser-mockup.webp" type="image/webp" />
+				<img src="/images/hero-browser-mockup.png" alt="" width="1536" height="1024" fetchpriority="high" />
+			</picture>
 		</div>
 	</div>
 </section>
 
-<script>
-	import { onScrollFrame, prefersReducedMotion } from '../../scripts/motion';
-
-	// Subtle parallax: the background image drifts down while the hero scrolls away.
-	const hero = document.querySelector<HTMLElement>('.hero');
-	const visual = hero?.querySelector<HTMLElement>('.hero-visual');
-
-	if (hero && visual && !prefersReducedMotion()) {
-		onScrollFrame(() => {
-			const bounds = hero.getBoundingClientRect();
-			if (bounds.bottom <= 0) return;
-			const shift = Math.min(34, Math.max(0, -bounds.top * 0.075));
-			visual.style.transform = `translate3d(0, ${shift}px, 0) scale(1.035)`;
-		});
-	}
-</script>
-
 <style>
 	.hero {
-		min-height: 760px;
+		min-height: 720px;
 		position: relative;
-		display: grid;
-		/* minmax(0, 1fr) keeps the column within the viewport even when a fallback font renders wider. */
-		grid-template-columns: minmax(0, 1fr);
-		place-items: center;
 		overflow: hidden;
-		color: #fff;
-		background: #15265a;
-	}
-
-	.hero-visual,
-	.hero-shade {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-
-	.hero-visual {
-		object-fit: cover;
-		object-position: center;
-		transform: translate3d(0, 0, 0) scale(1.035);
-		will-change: transform;
-	}
-
-	.hero-shade {
+		color: var(--foreground);
 		background:
-			radial-gradient(circle at 50% 42%, rgba(3, 8, 22, 0.12) 0%, rgba(3, 8, 22, 0.25) 38%, rgba(2, 5, 15, 0.5) 86%),
-			linear-gradient(90deg, rgba(2, 5, 15, 0.28), transparent 28% 72%, rgba(2, 5, 15, 0.3)),
-			linear-gradient(0deg, rgba(2, 5, 15, 0.5), transparent 48%);
-		animation: hero-shade-in 1.2s ease both;
+			radial-gradient(circle at 83% 24%, rgba(255, 81, 0, 0.18), transparent 30%),
+			linear-gradient(135deg, #fffaf4 0%, #fff6ee 54%, #fff1e8 100%);
+	}
+
+	.hero::before,
+	.hero::after {
+		content: '';
+		position: absolute;
+		width: 680px;
+		height: 280px;
+		right: -130px;
+		background: rgba(255, 81, 0, 0.06);
+		border-radius: 50%;
+		transform: rotate(-12deg);
+		pointer-events: none;
+	}
+
+	.hero::before {
+		top: 20px;
+	}
+
+	.hero::after {
+		right: -40px;
+		bottom: 40px;
+		transform: rotate(18deg);
+	}
+
+	.hero-inner {
+		position: relative;
+		z-index: 2;
+		width: min(100%, 1440px);
+		min-height: 720px;
+		margin: auto;
+		padding: calc(var(--header-height) + 4rem) clamp(1.5rem, 4vw, 4rem) 6rem;
+		display: grid;
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		align-items: center;
+		gap: clamp(4rem, 6vw, 7rem);
 	}
 
 	.hero-content {
-		z-index: 2;
-		width: 100%;
-		max-width: 980px;
-		padding: 8.5rem 1.5rem 7rem;
-		text-align: center;
+		max-width: 650px;
+		text-align: left;
 		animation: hero-content-in 0.9s cubic-bezier(0.2, 0.72, 0.2, 1) both;
+	}
+
+	.hero-eyebrow {
+		display: inline-flex;
+		align-items: center;
+		margin: 0 0 1.1rem;
+		padding: 0.5rem 0.8rem;
+		border: 1px solid rgba(255, 81, 0, 0.2);
+		border-radius: 999px;
+		color: var(--primary);
+		background: rgba(255, 81, 0, 0.08);
+		font-size: clamp(0.68rem, 0.8vw, 0.76rem);
+		font-weight: 700;
+		line-height: 1;
+		letter-spacing: 0.09em;
+		text-transform: uppercase;
 	}
 
 	.hero h1 {
 		margin: 0;
 		font-family: var(--font-display);
-		font-size: clamp(2.05rem, 3.75vw, 4rem);
-		font-weight: 400;
-		letter-spacing: -0.045em;
-		line-height: 0.98;
+		font-size: clamp(2.5rem, 3.8vw, 3.65rem);
+		font-weight: 500;
+		letter-spacing: -0.025em;
+		line-height: 1;
 		text-wrap: balance;
 	}
 
-	.hero h1 > span {
+	.hero-title-line {
 		display: block;
 		white-space: nowrap;
 	}
 
 	.hero h1 strong {
-		color: #fff;
-		font-weight: 700;
+		color: var(--foreground);
+		font-weight: 600;
 	}
 
 	.hero h1 > span:last-child strong {
-		color: #aebff3;
-		text-shadow: 0 0 42px rgba(23, 58, 155, 0.38);
+		color: var(--primary);
+		text-shadow: none;
 	}
 
 	.hero h1 em {
@@ -146,74 +159,83 @@ const t = content[Astro.props.locale].hero;
 		bottom: -0.08em;
 		width: 106%;
 		height: 0.22em;
-		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 18' preserveAspectRatio='none'%3E%3Cpath d='M2 14 Q50 2 98 13' fill='none' stroke='%237590ff' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E")
+		background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 18' preserveAspectRatio='none'%3E%3Cpath d='M2 14 Q50 2 98 13' fill='none' stroke='%23FF5100' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E")
 			center / 100% 100% no-repeat;
-		filter: drop-shadow(0 0 8px rgba(117, 144, 255, 0.34));
 		pointer-events: none;
 	}
 
-	.hero-copy {
-		max-width: 590px;
-		margin: 1.55rem auto 0;
-		color: rgba(255, 255, 255, 0.78);
-		font-size: clamp(0.82rem, 1vw, 0.96rem);
-		line-height: 1.65;
+	.hero-price {
+		display: flex;
+		align-items: baseline;
+		gap: clamp(0.55rem, 1vw, 0.9rem);
+		margin-top: 1.55rem;
+		white-space: nowrap;
+	}
+
+	.hero-price-prefix {
+		color: var(--foreground);
+		font-size: clamp(0.7rem, 0.9vw, 0.82rem);
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.hero-price strong {
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(1.9rem, 3vw, 3rem);
+		font-weight: 700;
+		letter-spacing: -0.04em;
+		line-height: 1;
+	}
+
+	.hero-price-suffix {
+		color: var(--muted);
+		font-size: clamp(0.7rem, 0.9vw, 0.84rem);
+		font-weight: 600;
+		letter-spacing: 0.02em;
 	}
 
 	.hero-actions {
 		margin-top: 2.3rem;
 		display: flex;
-		justify-content: center;
+		justify-content: flex-start;
 		gap: 0.8rem;
 	}
 
-	.button {
+	.hero-button {
 		min-width: 205px;
-		padding: 1rem 1.15rem;
-		display: inline-flex;
 		justify-content: space-between;
-		gap: 1.5rem;
-		border-radius: 999px;
-		text-decoration: none;
-		font-size: 0.67rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		transition:
-			transform 0.2s,
-			background 0.2s,
-			border-color 0.2s;
 	}
 
-	.button:hover {
-		transform: translateY(-2px);
-	}
-
-	.button span {
+	.hero-button span {
 		transition: transform 0.25s ease;
 	}
 
-	.button:hover span {
+	.hero-button:hover span {
 		transform: translate3d(3px, -2px, 0);
 	}
 
-	.button-light {
-		color: #fff;
-		background: var(--blue);
+	.hero-art {
+		position: relative;
+		min-width: 0;
+		margin-left: 3%;
+		animation: hero-art-in 1s cubic-bezier(0.2, 0.72, 0.2, 1) 120ms both;
 	}
 
-	.button-light:hover {
-		background: var(--blue-hover);
+	.hero-art-glow {
+		position: absolute;
+		inset: 18% 10%;
+		background: radial-gradient(circle closest-side, rgba(255, 81, 0, 0.28), transparent);
+		pointer-events: none;
 	}
 
-	.button-outline {
-		color: #fff;
-		border: 1px solid rgba(255, 255, 255, 0.55);
-		background: rgba(7, 10, 25, 0.28);
-	}
-
-	.button-outline:hover {
-		border-color: #aebff3;
-		background: rgba(23, 58, 155, 0.24);
+	.hero-art img {
+		position: relative;
+		width: min(760px, 112%);
+		height: auto;
+		margin-left: 0;
+		display: block;
 	}
 
 	@keyframes hero-content-in {
@@ -227,61 +249,95 @@ const t = content[Astro.props.locale].hero;
 		}
 	}
 
-	@keyframes hero-shade-in {
+	@keyframes hero-art-in {
 		from {
-			opacity: 0.35;
+			opacity: 0;
+			transform: translate3d(32px, 0, 0) scale(0.98);
 		}
 		to {
 			opacity: 1;
+			transform: translate3d(0, 0, 0) scale(1);
+		}
+	}
+
+	@media (max-width: 1000px) {
+		.hero-inner {
+			grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
+			gap: 2.75rem;
+		}
+		.hero h1 {
+			font-size: clamp(2.15rem, 4.6vw, 2.85rem);
+		}
+		.hero-art img {
+			width: 112%;
+			margin-left: 0;
 		}
 	}
 
 	@media (max-width: 800px) {
 		.hero {
-			min-height: 720px;
+			min-height: auto;
+		}
+		.hero-inner {
+			min-height: auto;
+			padding-top: calc(var(--header-height) + 4rem);
+			padding-bottom: 5rem;
+			grid-template-columns: 1fr;
+			gap: 3.5rem;
 		}
 		.hero-content {
-			padding-top: 7rem;
+			max-width: 700px;
+		}
+		.hero h1 {
+			font-size: clamp(2.1rem, 7vw, 3.25rem);
 		}
 		.hero-actions {
 			flex-wrap: wrap;
 		}
-		.hero h1 {
-			font-size: clamp(2.55rem, 7.4vw, 4.15rem);
+		.hero-art {
+			width: min(100%, 700px);
+			margin: 0 auto;
 		}
-		/* Let the heading wrap instead of overflowing when the fallback serif is wider (Android). */
-		.hero h1 > span {
-			white-space: normal;
+		.hero-art img {
+			width: 108%;
+			margin-left: -4%;
 		}
 	}
 
 	@media (max-width: 560px) {
-		.hero {
-			min-height: 790px;
-		}
 		.hero h1 {
-			font-size: clamp(1.6rem, 7.1vw, 1.92rem);
+			font-size: clamp(1.65rem, 7.4vw, 2.2rem);
 		}
 		.hero-actions {
 			flex-direction: column;
 			align-items: stretch;
 		}
-		.button {
+		.hero-price {
+			align-items: flex-start;
+			flex-wrap: wrap;
+			gap: 0.4rem 0.65rem;
+			white-space: normal;
+		}
+		.hero-price-suffix {
+			flex-basis: 100%;
+		}
+		.hero-button {
 			width: 100%;
 			justify-content: center;
 			gap: 0.75rem;
+		}
+		.hero-art img {
+			width: 110%;
+			margin-left: -5%;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
 		.hero-content,
-		.hero-shade,
-		.button span {
+		.hero-art,
+		.hero-button span {
 			animation: none !important;
 			transition: none !important;
-		}
-		.hero-visual {
-			transform: none !important;
 		}
 	}
 </style>

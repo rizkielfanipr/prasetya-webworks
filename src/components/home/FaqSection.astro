@@ -10,7 +10,14 @@ const t = content[Astro.props.locale];
 ---
 
 <section class="faq section-pad" id="faq" aria-labelledby="faq-title">
-	<SectionIntro id="faq-title" title={t.faqTitle.title} emphasis={t.faqTitle.emphasis} />
+	<SectionIntro
+		id="faq-title"
+		layout="split"
+		eyebrow={t.faqTitle.eyebrow}
+		title={t.faqTitle.title}
+		emphasis={t.faqTitle.emphasis}
+		description={t.faqTitle.description}
+	/>
 	<div class="faq-list">
 		{t.faqs.map((faq) => (
 			<details>
@@ -26,13 +33,11 @@ const t = content[Astro.props.locale];
 
 <style>
 	.faq {
-		background:
-			radial-gradient(circle at 82% 38%, rgba(174, 191, 243, 0.34), transparent 26%),
-			linear-gradient(180deg, #e9edff 0%, #e9edff 68%, #f0f0f0 90%, var(--ivory) 100%);
+		background: var(--background);
 	}
 
 	.faq-list {
-		max-width: 1080px;
+		max-width: 1320px;
 		margin: auto;
 		display: grid;
 		gap: 0.75rem;
@@ -40,8 +45,8 @@ const t = content[Astro.props.locale];
 
 	.faq-list details {
 		overflow: hidden;
-		background: rgba(255, 255, 255, 0.48);
-		border: 1px solid rgba(23, 58, 155, 0.2);
+		background: var(--card);
+		border: 1px solid var(--border);
 		border-radius: 16px;
 		transition:
 			background 0.2s,
@@ -49,8 +54,7 @@ const t = content[Astro.props.locale];
 	}
 
 	.faq-list details[open] {
-		background: rgba(255, 255, 255, 0.78);
-		box-shadow: 0 12px 25px rgba(23, 58, 155, 0.08);
+		border-color: rgba(255, 81, 0, 0.45);
 	}
 
 	.faq-list summary {
@@ -78,7 +82,7 @@ const t = content[Astro.props.locale];
 		flex: 0 0 27px;
 		display: grid;
 		place-items: center;
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 		border-radius: 50%;
 		font-family: Arial, sans-serif;

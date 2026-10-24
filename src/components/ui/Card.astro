@@ -1,0 +1,21 @@
+---
+/** Astro-native shadcn Card primitive. */
+interface Props {
+	class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<article class:list={['cn-card', className]}>
+	<slot />
+</article>
+
+<style>
+	.cn-card {
+		color: var(--card-foreground);
+		background: rgba(255, 255, 255, 0.76);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+</style>

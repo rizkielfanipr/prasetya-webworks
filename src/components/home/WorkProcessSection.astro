@@ -1,0 +1,151 @@
+---
+import SectionIntro from '../ui/SectionIntro.astro';
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale].workProcess;
+---
+
+<section class="work-process section-pad" id="process" aria-labelledby="process-title">
+	<SectionIntro id="process-title" layout="split" eyebrow={t.eyebrow} title={t.title} emphasis={t.emphasis} description={t.description} />
+	<ol class="process-timeline">
+		{t.steps.map((step, index) => (
+			<li>
+				<div class="step-marker" aria-hidden="true">
+					{String(index + 1).padStart(2, '0')}
+				</div>
+				<div class="step-copy">
+					<h3>{step.title}</h3>
+					<p>{step.description}</p>
+					{step.note && <small>{step.note}</small>}
+				</div>
+			</li>
+		))}
+	</ol>
+</section>
+
+<style>
+	.work-process {
+		background: var(--background);
+	}
+
+	.process-timeline {
+		max-width: 1320px;
+		margin: 0 auto;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(6, minmax(0, 1fr));
+		list-style: none;
+	}
+
+	.process-timeline li {
+		min-width: 0;
+		position: relative;
+		text-align: center;
+	}
+
+	.process-timeline li:not(:last-child)::after {
+		content: '';
+		position: absolute;
+		top: 25px;
+		left: calc(50% + 25px);
+		width: calc(100% - 50px);
+		height: 1px;
+		background: linear-gradient(90deg, var(--primary), rgba(255, 81, 0, 0.2));
+	}
+
+	.step-marker {
+		width: 50px;
+		height: 50px;
+		margin: 0 auto;
+		position: relative;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border: 6px solid var(--background);
+		border-radius: 50%;
+		box-shadow: 0 0 0 1px rgba(255, 81, 0, 0.3);
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+	}
+
+	.step-copy {
+		padding: 1.2rem 0.65rem 0;
+	}
+
+	.step-copy h3 {
+		margin: 0;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(0.92rem, 1.15vw, 1.08rem);
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.step-copy p {
+		margin: 0.55rem 0 0;
+		color: var(--muted);
+		font-size: 0.72rem;
+		line-height: 1.55;
+	}
+
+	.step-copy small {
+		display: block;
+		margin-top: 0.45rem;
+		color: var(--primary);
+		font-size: 0.68rem;
+		font-weight: 700;
+	}
+
+	@media (max-width: 1000px) {
+		.process-timeline {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 2.75rem 0;
+		}
+
+		.process-timeline li:nth-child(3)::after {
+			display: none;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.process-timeline {
+			max-width: 360px;
+			grid-template-columns: 1fr;
+			gap: 0;
+		}
+
+		.process-timeline li {
+			min-height: 92px;
+			display: grid;
+			grid-template-columns: 50px 1fr;
+			align-items: start;
+			gap: 1rem;
+			text-align: left;
+		}
+
+		.process-timeline li:not(:last-child)::after,
+		.process-timeline li:nth-child(3)::after {
+			top: 50px;
+			left: 24px;
+			width: 1px;
+			height: calc(100% - 4px);
+			display: block;
+			background: linear-gradient(180deg, var(--primary), rgba(255, 81, 0, 0.2));
+		}
+
+		.step-marker {
+			margin: 0;
+		}
+
+		.step-copy {
+			padding: 0.65rem 0 1.5rem;
+		}
+	}
+</style>

@@ -12,6 +12,9 @@ Setiap ADR mencatat **satu** keputusan teknis: konteks, keputusan, dan konsekuen
 | [0006](0006-english-urls.md) | Semua URL dan anchor berbahasa Inggris | Accepted |
 | [0007](0007-component-structure.md) | Komponen per section, gaya di-scope, type check di CI | Accepted |
 | [0008](0008-enforced-conventions.md) | Konvensi kode ditegakkan oleh alat dan AGENTS.md | Accepted |
+| [0009](0009-disewain-shadcn-design-system.md) | Design system Disewain dengan primitive bergaya shadcn | Accepted |
+| [0010](0010-package-orders-via-whatsapp.md) | Pemesanan dan konsultasi lewat WhatsApp | Accepted |
+| [0011](0011-seo-metadata.md) | Metadata SEO, sitemap dan data terstruktur | Accepted |
 
 ## Menulis ADR baru
 

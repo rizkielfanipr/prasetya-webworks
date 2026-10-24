@@ -7,6 +7,7 @@ Indeks semua dokumentasi project. Baca sesuai kebutuhan.
 | Dokumen | Isi |
 |---|---|
 | [architecture.md](architecture.md) | Gambaran sistem, struktur kode, rute, i18n, alur data |
+| [design.md](design.md) | Design system, token visual, typography, komponen, dan aturan responsif |
 | [development.md](development.md) | Setup lokal, perintah, konvensi kode (struktur, CSS, JS), tugas umum, pengujian |
 | [deployment.md](deployment.md) | CI/CD, secret, struktur server, `.htaccess` pengarah, rollback |
 | [troubleshooting.md](troubleshooting.md) | Masalah yang pernah terjadi beserta solusinya |

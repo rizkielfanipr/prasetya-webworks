@@ -1,0 +1,88 @@
+---
+/** Astro-native shadcn Button primitive: source-owned, token-driven, and zero client JS. */
+interface Props {
+	href?: string;
+	variant?: 'default' | 'outline' | 'ghost';
+	size?: 'default' | 'sm';
+	type?: 'button' | 'submit' | 'reset';
+	class?: string;
+	ariaLabel?: string;
+}
+
+const { href, variant = 'default', size = 'default', type = 'button', class: className = '', ariaLabel } = Astro.props;
+const classes = ['cn-button', `cn-button--${variant}`, `cn-button--${size}`, className];
+---
+
+{href ? (
+	<a class:list={classes} href={href} aria-label={ariaLabel}>
+		<slot />
+	</a>
+) : (
+	<button class:list={classes} type={type} aria-label={ariaLabel}>
+		<slot />
+	</button>
+)}
+
+<style>
+	.cn-button {
+		min-height: 48px;
+		padding: 0.875rem 1.5rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.625rem;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border: 1px solid var(--primary);
+		border-radius: var(--radius);
+		box-shadow: var(--brand-shadow);
+		font-size: 0.875rem;
+		font-weight: 600;
+		line-height: 1.25rem;
+		text-decoration: none;
+		cursor: pointer;
+		transition:
+			transform 180ms ease,
+			background-color 180ms ease,
+			border-color 180ms ease;
+	}
+
+	.cn-button:hover {
+		background: var(--blue-hover);
+		border-color: var(--blue-hover);
+		transform: translateY(-2px);
+	}
+
+	.cn-button--outline {
+		color: var(--foreground);
+		background: var(--card);
+		border-color: var(--border);
+		box-shadow: none;
+	}
+
+	.cn-button--outline:hover,
+	.cn-button--ghost:hover {
+		background: var(--secondary);
+		border-color: rgba(255, 81, 0, 0.45);
+	}
+
+	.cn-button--ghost {
+		color: var(--foreground);
+		background: transparent;
+		border-color: transparent;
+		box-shadow: none;
+	}
+
+	.cn-button--sm {
+		min-height: 36px;
+		padding: 0.625rem 1rem;
+		border-radius: 12px;
+		font-size: 0.75rem;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.cn-button {
+			transition: none;
+		}
+	}
+</style>

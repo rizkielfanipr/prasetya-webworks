@@ -1,5 +1,4 @@
 ---
-import SectionIntro from '../ui/SectionIntro.astro';
 import FilterChips from '../ui/FilterChips.astro';
 import TemplateCard from '../templates/TemplateCard.astro';
 import { content, type Locale } from '../../i18n/content';
@@ -29,21 +28,29 @@ const filters = [
 ---
 
 <section class="templates section-pad" id="templates" aria-labelledby="template-title">
-	<SectionIntro
-		id="template-title"
-		title={t.templatesIntro.title}
-		emphasis={t.templatesIntro.emphasis}
-		description={t.templatesIntro.description}
-	/>
-	<FilterChips
-		mode="button"
-		label={t.templatesIntro.filterLabel}
-		items={filters.map((filter) => ({
-			label: filter.label,
-			active: filter.key === 'all',
-			data: { 'data-filter': filter.key, 'data-view-all-href': filter.href, 'data-view-all-label': filter.viewAll },
-		}))}
-	/>
+	<header class="template-intro section-intro">
+		<p class="template-eyebrow">
+			<span aria-hidden="true"></span>
+			{t.templatesIntro.eyebrow}
+		</p>
+		<div class="template-intro-grid">
+			<h2 id="template-title">
+				{t.templatesIntro.title} <em>{t.templatesIntro.emphasis}</em>
+			</h2>
+			<p class="template-description">{t.templatesIntro.description}</p>
+		</div>
+	</header>
+	<div class="template-filters">
+		<FilterChips
+			mode="button"
+			label={t.templatesIntro.filterLabel}
+			items={filters.map((filter) => ({
+				label: filter.label,
+				active: filter.key === 'all',
+				data: { 'data-filter': filter.key, 'data-view-all-href': filter.href, 'data-view-all-label': filter.viewAll },
+			}))}
+		/>
+	</div>
 	<div class="template-grid" data-preview-size={previewSize}>
 		{previewTemplates.map((item, index) => (
 			<TemplateCard item={item} locale={locale} hidden={index >= previewSize} />
@@ -57,8 +64,6 @@ const filters = [
 </section>
 
 <script>
-	import { prefillContactMessage } from '../../scripts/contact';
-
 	const grid = document.querySelector<HTMLElement>('.template-grid');
 	const cards = Array.from(grid?.querySelectorAll<HTMLElement>('.template-card') ?? []);
 	const filters = Array.from(document.querySelectorAll<HTMLButtonElement>('#templates [data-filter]'));
@@ -81,20 +86,80 @@ const filters = [
 			if (viewAllLabel) viewAllLabel.textContent = button.dataset.viewAllLabel ?? '';
 		}),
 	);
-
-	// "Choose template" on home cards fills the contact form (catalog cards link to /?template=… instead).
-	grid?.querySelectorAll<HTMLButtonElement>('.template-select[data-template-request]').forEach((button) =>
-		button.addEventListener('click', () => {
-			prefillContactMessage(button.dataset.templateRequest ?? '');
-		}),
-	);
 </script>
 
 <style>
 	.templates {
-		background:
-			radial-gradient(circle at 10% 40%, rgba(220, 228, 255, 0.55), transparent 26%),
-			linear-gradient(180deg, var(--ivory) 0%, #f4f1ea 70%, #eff1f9 90%, #e9edff 100%);
+		background: #ffffff;
+	}
+
+	.template-intro {
+		max-width: 1320px;
+		margin: 0 auto clamp(2.5rem, 4vw, 3.5rem);
+	}
+
+	.template-eyebrow {
+		display: flex;
+		align-items: center;
+		gap: 0.8rem;
+		margin: 0 0 1.5rem;
+		color: var(--primary);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	.template-eyebrow span {
+		width: 2rem;
+		height: 1px;
+		background: currentColor;
+	}
+
+	.template-intro-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.65fr) minmax(260px, 0.75fr);
+		align-items: end;
+		gap: clamp(3rem, 7vw, 7rem);
+	}
+
+	.template-intro h2 {
+		max-width: 850px;
+		margin: 0;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(2.5rem, 3.8vw, 3.65rem);
+		font-weight: 600;
+		letter-spacing: -0.055em;
+		line-height: 0.98;
+	}
+
+	.template-intro h2 em {
+		color: var(--primary);
+		font-weight: 400;
+	}
+
+	.template-description {
+		max-width: 390px;
+		margin: 0 0 0.25rem;
+		color: var(--muted);
+		font-size: clamp(0.9rem, 1.25vw, 1.08rem);
+		line-height: 1.7;
+	}
+
+	.template-filters {
+		max-width: 1320px;
+		margin: 0 auto;
+	}
+
+	.template-filters :global(.filter-chips) {
+		justify-content: flex-start;
+	}
+
+	@media (max-width: 1000px) {
+		.template-intro h2 {
+			font-size: clamp(2.15rem, 4.6vw, 2.85rem);
+		}
 	}
 
 	.template-grid {
@@ -117,9 +182,10 @@ const filters = [
 		display: inline-flex;
 		align-items: center;
 		gap: 1rem;
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
-		border-radius: 999px;
+		border-radius: var(--radius);
+		box-shadow: var(--brand-shadow);
 		font-size: 0.66rem;
 		letter-spacing: 0.08em;
 		text-decoration: none;
@@ -145,8 +211,24 @@ const filters = [
 	}
 
 	@media (max-width: 800px) {
+		.template-intro h2 {
+			font-size: clamp(2.1rem, 7vw, 3.25rem);
+		}
+		.template-intro-grid {
+			grid-template-columns: 1fr;
+			gap: 1.25rem;
+		}
+		.template-description {
+			max-width: 620px;
+		}
 		.template-grid {
 			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.template-intro h2 {
+			font-size: clamp(1.65rem, 7.4vw, 2.2rem);
 		}
 	}
 </style>

@@ -13,8 +13,8 @@ import {
 	catalogPageCount,
 	catalogPath,
 	homePath,
+	roundedTemplateCount,
 	templateCategories,
-	templateRequestPath,
 	type TemplateCategory,
 } from '../../data/templates';
 
@@ -34,6 +34,10 @@ const items = catalogItems(category).slice((page - 1) * CATALOG_PAGE_SIZE, page 
 const categoryLabel = category ? t.templateCategories[category] : undefined;
 const catalogTitle = `${c.title} ${c.emphasis}`;
 const pageTitle = `${categoryLabel ? c.metaTitleCategory.replace('{category}', categoryLabel) : c.metaTitle}${page > 1 ? ` — ${c.pageLabel.replace('{page}', String(page))}` : ''} — ${site.name}`;
+const metaDescription = (categoryLabel ? c.metaDescriptionCategory : c.metaDescription)
+	.replace('{category}', categoryLabel ?? '')
+	.replace('{count}', String(roundedTemplateCount()))
+	.replace('{price}', t.packages[0].price);
 const alternates = { id: catalogPath('id', category, page), en: catalogPath('en', category, page) };
 const filters = [
 	{ href: catalogPath(locale), label: t.templatesIntro.all, active: !category },
@@ -41,7 +45,7 @@ const filters = [
 ];
 ---
 
-<Layout lang={locale} title={pageTitle} description={c.description} alternates={alternates}>
+<Layout lang={locale} title={pageTitle} description={metaDescription} alternates={alternates}>
 	<SiteHeader locale={locale} alternates={alternates} />
 
 	<main class="catalog" id="top">
@@ -77,7 +81,7 @@ const filters = [
 
 		<div class="catalog-grid">
 			{items.map((item) => (
-				<TemplateCard item={item} locale={locale} href={templateRequestPath(locale, item)} />
+				<TemplateCard item={item} locale={locale} />
 			))}
 		</div>
 
@@ -166,9 +170,10 @@ const filters = [
 	.catalog-cta {
 		margin-top: 4rem;
 		padding: clamp(2rem, 5vw, 3.2rem);
-		color: #fff;
-		background: linear-gradient(135deg, #10131d, var(--blue-deep));
-		border-radius: 28px;
+		color: var(--foreground);
+		background: linear-gradient(135deg, #fff3ea, #ffe2cf);
+		border: 1px solid rgba(255, 81, 0, 0.24);
+		border-radius: var(--radius);
 		text-align: center;
 	}
 
@@ -182,7 +187,7 @@ const filters = [
 	.catalog-cta p {
 		max-width: 520px;
 		margin: 0.8rem auto 1.6rem;
-		color: #c5cbe0;
+		color: var(--muted);
 		font-size: 0.8rem;
 		line-height: 1.6;
 	}
@@ -193,7 +198,8 @@ const filters = [
 		gap: 1rem;
 		color: var(--ink);
 		background: #fff;
-		border-radius: 999px;
+		border-radius: var(--radius);
+		box-shadow: var(--brand-shadow);
 		font-size: 0.66rem;
 		letter-spacing: 0.08em;
 		text-decoration: none;

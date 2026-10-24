@@ -26,21 +26,21 @@ Pengunjung ──► prasetyawebworks.web.id ─────────► webs
 ```
 src/
 ├── config/
-│   └── site.ts                   Konstanta situs: nama, email, logo, URL WordPress preview
+│   ├── site.ts                   Konstanta situs: nama, email, nomor WhatsApp, logo, sosial media, URL WordPress preview
+│   └── navigation.ts             navLinks(): menu section home yang dipakai bersama header dan footer
 ├── styles/
 │   └── global.css                Design token, gaya dasar, utilitas bersama (.section-pad, .field-row, .scroll-reveal)
 ├── scripts/                      Modul TypeScript yang dipakai oleh <script> komponen
 │   ├── motion.ts                 prefersReducedMotion(), onScrollFrame()
 │   ├── scroll-reveal.ts          initScrollReveal(): animasi muncul saat di-scroll
-│   ├── mailto.ts                 openMailto(): membuka aplikasi email dengan pesan siap kirim
-│   └── contact.ts                prefillContactMessage(): mengisi form kontak di home
+│   ├── whatsapp.ts               whatsappUrl() / openWhatsApp(): tautan dan pembuka chat WhatsApp bisnis dengan pesan siap kirim
 ├── components/
 │   ├── layout/                   Dipakai semua halaman
 │   │   ├── SiteHeader.astro      Header + navigasi + menu mobile + pemilih bahasa
 │   │   ├── SiteFooter.astro
 │   │   └── WhatsAppFloat.astro   Tombol konsultasi melayang (dipasang di Layout)
 │   ├── ui/                       Komponen generik tanpa pengetahuan domain
-│   │   ├── SectionIntro.astro    Judul section "judul <em>penekanan</em>" + deskripsi
+│   │   ├── SectionIntro.astro    Judul section "judul <em>penekanan</em>" + deskripsi; layout `center` atau `split`
 │   │   ├── FilterChips.astro     Deretan filter pill (mode link atau tombol)
 │   │   └── Pagination.astro      Navigasi halaman bernomor
 │   ├── home/                     Halaman home, satu file per section
@@ -52,8 +52,8 @@ src/
 │   │   ├── PackageModal.astro    Dialog pemesanan paket
 │   │   ├── TemplatesSection.astro
 │   │   ├── FaqSection.astro
-│   │   ├── ContactSection.astro
-│   │   └── TestimonialsPanel.astro
+│   │   ├── ContactSection.astro  Banner ajakan penutup (#contact): ke #packages atau konsultasi WhatsApp
+│   │   └── TestimonialsPanel.astro   Section testimoni, disembunyikan lewat `showTestimonials`
 │   └── templates/                Domain katalog template
 │       ├── TemplateCard.astro
 │       └── TemplateCatalogPage.astro
@@ -72,7 +72,7 @@ src/
 
 - **`pages/` tipis.** Setiap file rute hanya memanggil komponen halaman (`HomePage`, `TemplateCatalogPage`) dengan `locale` dan parameter. Versi ID dan EN memakai komponen yang sama.
 - **Satu komponen, satu tanggung jawab.** Markup, gaya (`<style>` scoped), dan perilaku (`<script>`) sebuah bagian berada di file yang sama.
-- **Logika yang dipakai lebih dari satu komponen** dipindah ke `src/scripts/`. Contohnya, `prefillContactMessage` dipakai oleh `TemplatesSection` (tombol "Pilih template") dan `ContactSection` (parameter URL dari katalog).
+- **Logika yang dipakai lebih dari satu komponen** dipindah ke `src/scripts/`. Contohnya, `whatsappUrl` dipakai oleh `TemplateCard`, `ContactSection` dan (lewat `openWhatsApp`) `PackageModal`.
 - **Komponen saling berkomunikasi lewat atribut data**, bukan lewat variabel global. Contoh: tombol `[data-package-select]` di `PricingSection` membawa data paket, lalu `PackageModal` membacanya.
 - **Konstanta** (email, logo, URL preview) hanya ada di `src/config/site.ts`.
 
@@ -115,10 +115,11 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
 
 ## Alur pemesanan / konsultasi
 
-1. **Dari home:** tombol "Pilih template" memanggil `prefillContactMessage()` untuk mengisi form `#contact`.
-2. **Dari katalog:** tautan ke `/?template=<kode>&name=<nama>#contact`. Script `ContactSection` membaca parameter itu, mengisi pesan, lalu membersihkan URL.
-3. **Paket:** tombol di `PricingSection` membuka `PackageModal` dengan detail paket.
-4. Form kontak dan modal paket mengirim lewat `openMailto()` ke alamat email di `site.ts`, sehingga aplikasi email pengunjung yang terbuka. Teks label email diambil dari atribut `data-*` pada form. Tidak ada backend form.
+1. **Template (home dan katalog):** tombol "Pilih template" adalah tautan `wa.me` dengan pesan berisi kode dan nama template, dibuat saat build oleh `whatsappUrl()`.
+2. **Banner `#contact`:** "Buat Website Sekarang" menuju `#packages`; "Konsultasi Gratis" membuka WhatsApp dengan pesan konsultasi. Header, hero, tombol WhatsApp melayang dan CTA katalog mengarah ke banner ini.
+3. **Paket:** tombol di `PricingSection` membawa detail paket sebagai JSON di `data-package` (nama, harga, fasilitas, ekstensi domain, revisi, estimasi). `PackageModal` membacanya, menampilkan ringkasan dan pilihan domain di kiri, lalu form pemesanan di kanan.
+4. **Modal paket** mengirim ringkasan pesanan lewat `openWhatsApp()` ke nomor `site.whatsapp` (lihat [ADR 0010](decisions/0010-package-orders-via-whatsapp.md)). Label ringkasan diambil dari atribut `data-*` pada form.
+5. Tidak ada form kontak maupun backend form; semua kontak masuk lewat WhatsApp.
 
 ## Gaya (CSS)
 
@@ -139,13 +140,13 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
 | Flag | Lokasi | Fungsi |
 |---|---|---|
 | `showPartners` | `src/components/home/HomePage.astro` | Section "mitra" dan link menu "Mitra". Saat ini `false` karena belum ada logo klien asli |
+| `showTestimonials` | `src/components/home/HomePage.astro` | Section testimoni (setelah Cara Kerja). Saat ini `false` karena belum ada klien; isi `testimonials` di `content.ts` masih contoh. Saat dinyalakan, samakan dulu headingnya dengan `SectionIntro layout="split"` |
 | `previewSize` | `src/components/home/TemplatesSection.astro` | Jumlah template per tab di home (6) |
 | `CATALOG_PAGE_SIZE` | `src/data/templates.ts` | Jumlah template per halaman katalog (24) |
 
 ## Utang teknis yang diketahui
 
-- Form memakai `mailto:` dan sering tidak berfungsi baik di HP.
-- Belum ada `sitemap.xml`, `robots.txt`, link canonical, Open Graph, dan `site` di `astro.config.mjs`.
+- `site.whatsapp` dan URL di `site.social` masih placeholder dan harus diganti dengan nomor dan profil asli sebelum deploy.
 - Script pembuat `templates.json` dan thumbnail belum ada di repo (lihat [template-catalog.md](template-catalog.md)).
 - Belum ada tes otomatis. Regresi tampilan masih diperiksa manual dengan perbandingan screenshot (lihat [development.md](development.md)).
 
@@ -153,10 +154,7 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
 
 Sisa dari dokumen kebutuhan awal (PRD landing page, ada di riwayat git):
 
-- Tombol WhatsApp ke nomor bisnis asli, dengan pesan awal (termasuk nama paket atau template). Sekarang tombol mengarah ke form `#contact`.
-- Form yang benar-benar mengirim data, dengan validasi, status berhasil/gagal, dan anti-spam (honeypot atau rate limit).
 - Halaman 404 dan Kebijakan Privasi.
-- Analytics untuk event konversi: klik WhatsApp, klik CTA paket, form mulai diisi, dan form terkirim/gagal.
-- Structured data `ProfessionalService` (schema.org).
-- Konten asli: testimoni klien (sekarang contoh) dan logo mitra (section disembunyikan, `showPartners`).
+- Analytics untuk event konversi: klik WhatsApp, klik CTA paket, dan pesanan paket terkirim.
+- Konten asli: testimoni klien (section disembunyikan, `showTestimonials`) dan logo mitra (section disembunyikan, `showPartners`).
 - Target kualitas: skor Lighthouse ≥ 90 (Performance, Accessibility, Best Practices, SEO), aksesibilitas WCAG 2.2 AA, dan target sentuh sekitar 44×44 px.

@@ -4,14 +4,16 @@ import SiteHeader from '../layout/SiteHeader.astro';
 import SiteFooter from '../layout/SiteFooter.astro';
 import HeroSection from './HeroSection.astro';
 import PartnersSection from './PartnersSection.astro';
-import BenefitsSection from './BenefitsSection.astro';
 import PricingSection from './PricingSection.astro';
 import TemplatesSection from './TemplatesSection.astro';
+import WorkProcessSection from './WorkProcessSection.astro';
+import TestimonialsPanel from './TestimonialsPanel.astro';
 import FaqSection from './FaqSection.astro';
 import ContactSection from './ContactSection.astro';
 import PackageModal from './PackageModal.astro';
 import { content, type Locale } from '../../i18n/content';
 import { homePath } from '../../data/templates';
+import { site } from '../../config/site';
 
 interface Props {
 	locale: Locale;
@@ -22,9 +24,42 @@ const t = content[locale];
 
 // Hidden until real client logos are available; flip to true to show the section and its "Mitra" nav links.
 const showPartners = false;
+// Hidden until there are real client reviews; the current entries are placeholders.
+const showTestimonials = false;
+
+// schema.org data so search engines know the business name, what it offers and at what price.
+const url = new URL(homePath(locale), Astro.site).href;
+const structuredData = [
+	{ '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url, inLanguage: locale },
+	{
+		'@context': 'https://schema.org',
+		'@type': 'ProfessionalService',
+		name: site.name,
+		url,
+		description: t.meta.description,
+		logo: new URL(site.logoSquare, Astro.site).href,
+		image: new URL(site.ogImage, Astro.site).href,
+		email: site.email,
+		areaServed: { '@type': 'Country', name: 'Indonesia' },
+		address: { '@type': 'PostalAddress', addressCountry: 'ID' },
+		makesOffer: t.packages.map((item) => ({
+			'@type': 'Offer',
+			name: item.name,
+			description: item.tagline,
+			price: item.price.replace(/\D/g, ''),
+			priceCurrency: 'IDR',
+		})),
+	},
+];
 ---
 
-<Layout lang={locale} title={t.meta.title} description={t.meta.description} alternates={{ id: homePath('id'), en: homePath('en') }}>
+<Layout
+	lang={locale}
+	title={t.meta.title}
+	description={t.meta.description}
+	alternates={{ id: homePath('id'), en: homePath('en') }}
+	structuredData={structuredData}
+>
 	<SiteHeader locale={locale} alternates={{ id: homePath('id'), en: homePath('en') }} onHome showPartners={showPartners} />
 
 	<main id="top">
@@ -32,9 +67,10 @@ const showPartners = false;
 
 		<div class="content-shell" id="partners">
 			{showPartners && <PartnersSection locale={locale} />}
-			<BenefitsSection locale={locale} />
-			<PricingSection locale={locale} />
 			<TemplatesSection locale={locale} />
+			<WorkProcessSection locale={locale} />
+			{showTestimonials && <TestimonialsPanel locale={locale} />}
+			<PricingSection locale={locale} />
 			<FaqSection locale={locale} />
 			<ContactSection locale={locale} />
 		</div>
@@ -42,7 +78,7 @@ const showPartners = false;
 		<PackageModal locale={locale} />
 	</main>
 
-	<SiteFooter locale={locale} showAbout={showPartners} />
+	<SiteFooter locale={locale} showPartners={showPartners} />
 </Layout>
 
 <script>
@@ -51,18 +87,18 @@ const showPartners = false;
 	initScrollReveal([
 		'.partner-heading',
 		'.section-intro',
-		'.benefit-card',
 		'.pricing-card',
 		'.template-card',
+		'.process-timeline li',
 		'.faq-list details',
-		'.contact-form',
+		'.contact-banner',
 		'.testimonial-heading',
 		'.testimonial-marquees',
 	]);
 </script>
 
 <style>
-	/* Rounded sheet that slides up over the bottom of the hero. */
+	/* Warm shadcn-style content sheet over the hero. */
 	.content-shell {
 		position: relative;
 		z-index: 4;
@@ -70,14 +106,16 @@ const showPartners = false;
 		overflow: hidden;
 		/* Makes Safari clip composited children to the rounded corners. */
 		isolation: isolate;
-		border-radius: 32px 32px 0 0;
+		border: 1px solid rgba(255, 81, 0, 0.14);
+		border-bottom: 0;
+		border-radius: 24px 24px 0 0;
 		background: var(--ivory);
 	}
 
 	@media (max-width: 800px) {
 		.content-shell {
 			margin-top: -30px;
-			border-radius: 22px 22px 0 0;
+			border-radius: 18px 18px 0 0;
 		}
 	}
 </style>

@@ -2,6 +2,7 @@
 import { content, type Locale } from '../../i18n/content';
 import { homePath } from '../../data/templates';
 import { site } from '../../config/site';
+import { navLinks } from '../../config/navigation';
 
 interface Props {
 	locale: Locale;
@@ -16,13 +17,7 @@ interface Props {
 const { locale, alternates, onHome = false, showPartners = false } = Astro.props;
 const t = content[locale];
 const base = onHome ? '' : homePath(locale);
-const links = [
-	...(showPartners ? [{ hash: '#partners', label: t.nav.about }] : []),
-	{ hash: '#why-us', label: t.nav.services },
-	{ hash: '#packages', label: t.nav.packages },
-	{ hash: '#templates', label: t.nav.work },
-	{ hash: '#faq', label: t.nav.faq },
-];
+const links = navLinks(locale, showPartners);
 const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	label: code.toUpperCase(),
 	href: alternates[code],
@@ -32,7 +27,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 
 <header class="site-header" data-site-header>
 	<a class="brand" href={onHome ? '#top' : homePath(locale)} aria-label={`${site.name} — ${onHome ? t.footer.back : t.catalog.home}`}>
-		<img src={site.logo} alt={site.name} width="260" height="90" />
+		<img src={site.logo} alt={site.name} width="211" height="64" />
 	</a>
 
 	<nav class="desktop-nav" aria-label="Main navigation">
@@ -112,9 +107,9 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		color: #fff;
-		background: rgba(7, 7, 7, 0.84);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+		color: var(--foreground);
+		background: rgba(255, 250, 244, 0.86);
+		border-bottom: 1px solid rgba(255, 81, 0, 0.12);
 		backdrop-filter: blur(16px);
 		transition:
 			height 0.3s ease,
@@ -123,9 +118,9 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	}
 
 	.site-header.is-scrolled {
-		height: 66px;
-		background: rgba(7, 7, 9, 0.94);
-		border-bottom-color: rgba(117, 144, 255, 0.2);
+		height: 74px;
+		background: rgba(255, 250, 244, 0.96);
+		border-bottom-color: rgba(255, 81, 0, 0.22);
 	}
 
 	.brand {
@@ -133,7 +128,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		height: 48px;
 		display: flex;
 		align-items: center;
-		filter: invert(1);
+		filter: none;
 	}
 
 	.brand img {
@@ -177,19 +172,19 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		display: flex;
 		align-items: center;
 		gap: 0.35rem;
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		border-radius: 999px;
+		border: 1px solid var(--border);
+		border-radius: 12px;
 	}
 
 	.language-switcher {
 		padding: 0.34rem 0.48rem;
-		color: rgba(255, 255, 255, 0.52);
+		color: var(--muted);
 		font-size: 0.61rem;
 	}
 
 	.mobile-header-languages {
 		padding: 0.34rem 0.5rem;
-		color: rgba(255, 255, 255, 0.5);
+		color: var(--muted);
 		font-size: 0.6rem;
 	}
 
@@ -203,7 +198,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	.language-switcher .active,
 	.mobile-header-languages a:hover,
 	.mobile-header-languages .active {
-		color: #fff;
+		color: var(--foreground);
 	}
 
 	.language-switcher .active,
@@ -216,10 +211,11 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		display: inline-flex;
 		align-items: center;
 		gap: 0.52rem;
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 		border: 1px solid var(--blue);
-		border-radius: 999px;
+		border-radius: 16px;
+		box-shadow: var(--brand-shadow);
 		transition:
 			background 0.2s,
 			border-color 0.2s,
@@ -256,18 +252,18 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		place-items: center;
 		list-style: none;
 		cursor: pointer;
-		color: #fff;
-		background: rgba(255, 255, 255, 0.06);
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		border-radius: 50%;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
 		transition:
 			background 0.2s,
 			border-color 0.2s;
 	}
 
 	.mobile-nav summary:hover {
-		background: rgba(117, 144, 255, 0.16);
-		border-color: rgba(117, 144, 255, 0.45);
+		background: var(--secondary);
+		border-color: rgba(255, 81, 0, 0.45);
 	}
 
 	.mobile-nav summary::-webkit-details-marker {
@@ -275,6 +271,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	}
 
 	.mobile-nav[open] summary {
+		color: var(--primary-foreground);
 		background: var(--blue);
 		border-color: var(--blue);
 	}
@@ -328,18 +325,18 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		padding: 0.75rem;
 		display: grid;
 		gap: 0.2rem;
-		color: #fff;
-		background: rgba(12, 15, 27, 0.97);
-		border: 1px solid rgba(117, 144, 255, 0.22);
-		border-radius: 20px;
-		box-shadow: 0 22px 60px rgba(2, 5, 15, 0.38);
+		color: var(--foreground);
+		background: rgba(255, 255, 255, 0.97);
+		border: 1px solid rgba(255, 81, 0, 0.2);
+		border-radius: 16px;
+		box-shadow: 0 20px 50px rgba(100, 45, 15, 0.14);
 		backdrop-filter: blur(18px);
 		animation: mobile-menu-in 0.22s ease both;
 	}
 
 	.mobile-panel a {
 		padding: 0.85rem 0.9rem;
-		color: rgba(255, 255, 255, 0.78);
+		color: var(--muted);
 		text-decoration: none;
 		border-radius: 12px;
 		font-size: 0.7rem;
@@ -352,8 +349,8 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	}
 
 	.mobile-panel a:hover {
-		color: #fff;
-		background: rgba(117, 144, 255, 0.12);
+		color: var(--foreground);
+		background: var(--secondary);
 		transform: translateX(3px);
 	}
 
@@ -363,7 +360,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 		align-items: center;
 		justify-content: center;
 		gap: 0.55rem;
-		color: #fff;
+		color: var(--primary-foreground);
 		background: var(--blue);
 		font-weight: 700;
 	}
@@ -380,7 +377,7 @@ const languages = (['id', 'en'] as Locale[]).map((code) => ({
 	.mobile-nav summary:focus-visible,
 	.mobile-panel a:focus-visible,
 	.mobile-header-languages a:focus-visible {
-		outline: 2px solid #9eb3ff;
+		outline: 2px solid var(--ring);
 		outline-offset: 2px;
 	}
 

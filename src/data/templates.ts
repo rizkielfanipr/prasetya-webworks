@@ -21,6 +21,9 @@ export const templateCategories = (Object.keys(content.id.templateCategories) as
 export const templatesIn = (category?: TemplateCategory) => (category ? templates.filter((item) => item.category === category) : templates);
 
 /** Round-robin across categories so an unfiltered list opens with a varied mix. */
+/** Catalog size rounded down to the hundred, for "200+ templates" claims that stay true as the catalog grows. */
+export const roundedTemplateCount = () => Math.floor(templates.length / 100) * 100;
+
 export const interleaveByCategory = (items: TemplateItem[]) => {
 	const groups = templateCategories.map((key) => items.filter((item) => item.category === key));
 	return Array.from({ length: Math.max(0, ...groups.map((group) => group.length)) }, (_, round) => groups.map((group) => group[round]))
@@ -44,7 +47,3 @@ export const catalogPageCount = (category?: TemplateCategory) => Math.max(1, Mat
 /** Page numbers 2..n for getStaticPaths; page 1 is served by the index route. */
 export const laterCatalogPages = (category?: TemplateCategory) =>
 	Array.from({ length: catalogPageCount(category) - 1 }, (_, index) => String(index + 2));
-
-/** Sends the visitor to the home contact form, which pre-fills the message from these params. */
-export const templateRequestPath = (locale: Locale, item: TemplateItem) =>
-	`${homePath(locale)}?${new URLSearchParams({ template: item.code, name: item.name })}#contact`;

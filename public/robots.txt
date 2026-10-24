@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prasetyawebworks.web.id/sitemap-index.xml

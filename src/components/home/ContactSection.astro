@@ -1,223 +1,241 @@
 ---
-import TestimonialsPanel from './TestimonialsPanel.astro';
 import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
+import { whatsappUrl } from '../../scripts/whatsapp';
 
 interface Props {
 	locale: Locale;
 }
 
-const { locale } = Astro.props;
-const { contact: t, status, templatesIntro } = content[locale];
+const { contact: t, packages } = content[Astro.props.locale];
+// "From {price}" follows the cheapest package so the banner never disagrees with the pricing cards.
+const highlights = t.highlights.map((item) => item.replace('{price}', packages[0].price));
 ---
 
 <section class="contact section-pad" id="contact" aria-labelledby="contact-title">
-	<form
-		class="contact-form"
-		id="contact-form"
-		data-subject={status.consultationSubject}
-		data-name-label={status.name}
-		data-topic-label={status.topic}
-		data-sent-status={status.email}
-		data-template-request={templatesIntro.request}
-	>
-		<h2 id="contact-title">{t.title}</h2>
-		<p>{t.description}</p>
-		<div class="field-row">
-			<label>
-				{t.name}
-				<input name="name" type="text" placeholder={t.namePlaceholder} required />
-			</label>
-			<label>
-				{t.email}
-				<input name="email" type="email" placeholder="nama@email.com" required />
-			</label>
+	<div class="contact-banner">
+		<p class="contact-eyebrow">{t.eyebrow}</p>
+		<h2 id="contact-title">
+			{t.title}
+			<br />
+			<em>{t.emphasis}</em>.
+		</h2>
+		<p class="contact-description">{t.description}</p>
+		<div class="contact-actions">
+			<a class="contact-primary" href="#packages">
+				<svg viewBox="0 0 24 24" aria-hidden="true">
+					<circle cx="12" cy="12" r="9"></circle>
+					<path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"></path>
+				</svg>
+				{t.primary}
+				<span class="contact-arrow" aria-hidden="true">
+					→
+				</span>
+			</a>
+			<a class="contact-secondary" href={whatsappUrl(t.message.replace('{site}', site.name))} target="_blank" rel="noopener">
+				<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+				{t.secondary}
+			</a>
 		</div>
-		<label>
-			{t.topic}
-			<select name="topic" required>
-				<option value="">{t.topicPlaceholder}</option>
-				{t.topics.map((topic) => (
-					<option>{topic}</option>
-				))}
-			</select>
-		</label>
-		<label>
-			{t.message}
-			<textarea name="message" rows="5" placeholder={t.messagePlaceholder} required></textarea>
-		</label>
-		<button type="submit">
-			{t.submit} <span aria-hidden="true">↗</span>
-		</button>
-		<p class="form-status" role="status" aria-live="polite"></p>
-	</form>
-	<TestimonialsPanel locale={locale} />
+		<p class="contact-highlights">{highlights.join(' · ')}</p>
+	</div>
 </section>
-
-<script>
-	import { openMailto } from '../../scripts/mailto';
-	import { prefillContactMessage } from '../../scripts/contact';
-
-	const form = document.querySelector<HTMLFormElement>('#contact-form');
-
-	form?.addEventListener('submit', (event) => {
-		event.preventDefault();
-		const data = new FormData(form);
-		const label = form.dataset;
-		openMailto(
-			`${label.subject} — ${data.get('topic') ?? ''}`,
-			`${label.nameLabel}: ${data.get('name')}\nEmail: ${data.get('email')}\n${label.topicLabel}: ${data.get('topic')}\n\n${data.get('message')}`,
-		);
-		const status = form.querySelector<HTMLElement>('.form-status');
-		if (status) status.textContent = label.sentStatus ?? '';
-	});
-
-	// Visitors arriving from the template catalog (/?template=0001&name=…#contact) get the message pre-filled.
-	const params = new URLSearchParams(window.location.search);
-	const code = params.get('template') ?? '';
-	if (form && /^\d{4}$/.test(code)) {
-		const name = (params.get('name') ?? '').slice(0, 60);
-		const message = (form.dataset.templateRequest ?? '').replace('{code}', code).replace('{name}', name).replace(/\s+\./, '.');
-		prefillContactMessage(message, { scroll: false });
-		window.history.replaceState(null, '', `${window.location.pathname}${window.location.hash}`);
-	}
-</script>
 
 <style>
 	.contact {
-		max-width: 1500px;
+		background: var(--card);
+	}
+
+	.contact-banner {
+		max-width: 1320px;
 		margin: auto;
-		padding-inline: clamp(1.25rem, 4vw, 4.5rem);
-		display: grid;
-		grid-template-columns: minmax(340px, 0.78fr) minmax(0, 1.35fr);
-		gap: clamp(2rem, 4vw, 4.5rem);
-		align-items: center;
+		padding: clamp(3.5rem, 7vw, 6.5rem) clamp(1.5rem, 5vw, 4rem);
+		position: relative;
+		overflow: hidden;
+		isolation: isolate;
+		color: var(--primary-foreground);
+		text-align: center;
 		background:
-			radial-gradient(circle at 78% 42%, rgba(215, 224, 251, 0.45), transparent 36%),
-			linear-gradient(180deg, var(--ivory) 0%, #f8f5ef 70%, #ece9e2 100%);
+			radial-gradient(circle at 8% 100%, rgba(255, 81, 0, 0.32), transparent 38%),
+			linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 64px 64px,
+			linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) 0 0 / 64px 64px,
+			var(--foreground);
+		border-radius: 24px;
 	}
 
-	.contact-form {
-		padding: clamp(1.5rem, 2.6vw, 2.5rem);
-		background: rgba(255, 253, 248, 0.68);
-		border: 1px solid rgba(23, 58, 155, 0.16);
-		border-radius: 26px;
-	}
-
-	.contact-form h2 {
-		margin: 0;
-		color: var(--ink);
-		font-family: var(--font-serif);
-		font-size: clamp(2.25rem, 3.2vw, 3.65rem);
-		font-weight: 400;
-		letter-spacing: -0.045em;
-		line-height: 0.98;
-	}
-
-	.contact-form > p:not(.form-status) {
-		max-width: 510px;
-		margin: 1rem 0 1.8rem;
-		color: var(--muted);
-		font-size: 0.78rem;
-		line-height: 1.65;
-	}
-
-	.contact-form label {
-		margin-bottom: 0.8rem;
-		display: grid;
-		gap: 0.42rem;
-		font-size: 0.61rem;
-		font-weight: 700;
-		letter-spacing: 0.035em;
-	}
-
-	.contact-form input,
-	.contact-form select,
-	.contact-form textarea {
-		width: 100%;
-		padding: 0.86rem 0.9rem;
-		color: var(--ink);
-		background: rgba(255, 255, 255, 0.72);
-		border: 1px solid rgba(17, 19, 26, 0.14);
-		border-radius: 14px;
-		outline: none;
-		font-size: 0.76rem;
-		transition:
-			border-color 0.2s,
-			box-shadow 0.2s,
-			background 0.2s;
-	}
-
-	.contact-form input:focus,
-	.contact-form select:focus,
-	.contact-form textarea:focus {
-		background: #fff;
-		border-color: var(--blue);
-		box-shadow: 0 0 0 3px rgba(23, 58, 155, 0.11);
-	}
-
-	.contact-form button {
-		width: 100%;
-		padding: 0.95rem 1.1rem;
+	.contact-eyebrow {
+		margin: 0 0 1.6rem;
 		display: flex;
+		align-items: center;
 		justify-content: center;
 		gap: 1rem;
-		color: #fff;
-		background: linear-gradient(100deg, var(--blue), var(--blue-deep));
-		border: 0;
-		border-radius: 999px;
-		cursor: pointer;
-		font-size: 0.6rem;
+		color: var(--primary);
+		font-size: 0.75rem;
 		font-weight: 700;
-		letter-spacing: 0.14em;
+		letter-spacing: 0.2em;
 		text-transform: uppercase;
+	}
+
+	.contact-eyebrow::before,
+	.contact-eyebrow::after {
+		content: '';
+		width: 2.5rem;
+		height: 1px;
+		background: currentColor;
+	}
+
+	.contact-banner h2 {
+		margin: 0 auto;
+		font-family: var(--font-display);
+		font-size: clamp(2.3rem, 5vw, 4.4rem);
+		font-weight: 700;
+		letter-spacing: -0.04em;
+		line-height: 1.08;
+	}
+
+	/* The emphasis sits on its own line over a highlighter stroke. */
+	.contact-banner h2 em {
+		padding-inline: 0.12em;
+		font-style: italic;
+		font-weight: 500;
+		background: linear-gradient(transparent 58%, rgba(255, 81, 0, 0.6) 58%, rgba(255, 81, 0, 0.6) 88%, transparent 88%);
+		box-decoration-break: clone;
+	}
+
+	.contact-description {
+		max-width: 620px;
+		margin: 1.6rem auto 0;
+		color: rgba(255, 255, 255, 0.78);
+		font-size: clamp(0.95rem, 1.4vw, 1.12rem);
+		line-height: 1.7;
+	}
+
+	.contact-actions {
+		margin-top: 2.4rem;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1rem;
+	}
+
+	.contact-primary,
+	.contact-secondary {
+		min-height: 56px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.75rem;
+		border-radius: var(--radius);
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-decoration: none;
 		transition:
-			filter 0.2s,
-			transform 0.2s;
+			transform 180ms ease,
+			background-color 180ms ease,
+			border-color 180ms ease;
 	}
 
-	.contact-form button:hover {
-		filter: brightness(1.08);
-		transform: translateY(-1px);
+	.contact-primary {
+		padding: 0.5rem 0.6rem 0.5rem 1.4rem;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		box-shadow: var(--brand-shadow);
 	}
 
-	.contact-form button span {
-		transition: transform 0.25s ease;
+	.contact-primary:hover {
+		background: var(--blue-hover);
+		transform: translateY(-2px);
 	}
 
-	.contact-form button:hover span {
-		transform: translate3d(3px, -2px, 0);
+	.contact-primary svg {
+		width: 20px;
+		height: 20px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.8;
 	}
 
-	.form-status {
-		min-height: 1rem;
-		margin: 0.65rem 0 0;
-		color: var(--muted);
-		font-size: 0.66rem;
+	.contact-arrow {
+		width: 38px;
+		height: 38px;
+		display: grid;
+		place-items: center;
+		color: var(--primary);
+		background: var(--primary-foreground);
+		border-radius: 12px;
+		transition: transform 180ms ease;
 	}
 
-	@media (max-width: 1000px) {
-		.contact {
-			grid-template-columns: 1fr;
-		}
-		.contact-form {
-			max-width: 680px;
-			margin: auto;
-		}
+	.contact-primary:hover .contact-arrow {
+		transform: translateX(3px);
+	}
+
+	.contact-secondary {
+		padding: 0.5rem 1.5rem;
+		color: var(--primary-foreground);
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px solid rgba(255, 255, 255, 0.28);
+	}
+
+	.contact-secondary:hover {
+		background: rgba(255, 255, 255, 0.1);
+		border-color: rgba(255, 255, 255, 0.5);
+		transform: translateY(-2px);
+	}
+
+	.contact-secondary i {
+		color: #25d366;
+		font-size: 1.25rem;
+	}
+
+	.contact-primary:focus-visible,
+	.contact-secondary:focus-visible {
+		outline: 2px solid var(--primary-foreground);
+		outline-offset: 3px;
+	}
+
+	.contact-highlights {
+		margin: 2.6rem 0 0;
+		color: rgba(255, 255, 255, 0.5);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
 	}
 
 	@media (max-width: 560px) {
 		.contact {
-			padding-inline: 1.1rem;
+			padding-inline: 1rem;
 		}
-		.contact-form h2 {
-			font-size: 2.45rem;
+
+		.contact-banner {
+			border-radius: var(--radius);
+		}
+
+		.contact-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.contact-primary {
+			justify-content: space-between;
+		}
+
+		.contact-primary svg {
+			display: none;
+		}
+
+		.contact-highlights {
+			letter-spacing: 0.12em;
+			line-height: 1.8;
 		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.contact-form button span {
-			animation: none !important;
-			transition: none !important;
+		.contact-primary,
+		.contact-secondary,
+		.contact-arrow {
+			transition: none;
 		}
 	}
 </style>
