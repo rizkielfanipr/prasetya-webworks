@@ -33,6 +33,7 @@ src/
 ├── scripts/                      Modul TypeScript yang dipakai oleh <script> komponen
 │   ├── motion.ts                 prefersReducedMotion(), onScrollFrame()
 │   ├── scroll-reveal.ts          initScrollReveal(): animasi muncul saat di-scroll
+│   ├── carousel.ts               initCarousel(): carousel hero (10 detik per slide, panah, titik, swipe, keyboard, jeda)
 │   ├── whatsapp.ts               whatsappUrl() / openWhatsApp(): tautan dan pembuka chat WhatsApp bisnis dengan pesan siap kirim
 ├── components/
 │   ├── layout/                   Dipakai semua halaman
@@ -45,7 +46,7 @@ src/
 │   │   └── Pagination.astro      Navigasi halaman bernomor
 │   ├── home/                     Halaman home, satu file per section
 │   │   ├── HomePage.astro        Menyusun semua section + animasi reveal
-│   │   ├── HeroSection.astro
+│   │   ├── HeroSection.astro     Carousel 3 slide; teks di hero.slides (content.ts), link dan visual di slideSetup
 │   │   ├── PartnersSection.astro (disembunyikan, lihat flag showPartners)
 │   │   ├── BenefitsSection.astro
 │   │   ├── PricingSection.astro

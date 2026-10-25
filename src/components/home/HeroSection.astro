@@ -1,54 +1,166 @@
 ---
 import { content, type Locale } from '../../i18n/content';
 import Button from '../ui/Button.astro';
-import { roundedTemplateCount } from '../../data/templates';
+import { catalogPath, roundedTemplateCount, templateCategories, templates } from '../../data/templates';
 
 interface Props {
 	locale: Locale;
 }
 
-const t = content[Astro.props.locale].hero;
+const { locale } = Astro.props;
+const all = content[locale];
+const t = all.hero;
+const fill = (text: string) =>
+	text
+		.replace('{price}', all.packages[0].price)
+		.replace('{count}', String(roundedTemplateCount()))
+		.replace('{categories}', String(templateCategories.length));
+
+// Links and visuals stay in code; the matching texts live in content.ts (hero.slides, same order).
+const slideSetup = [
+	{ art: 'mockup', primaryHref: '#contact', secondaryHref: '#templates' },
+	{ art: 'templates', primaryHref: '#templates', secondaryHref: catalogPath(locale) },
+	{ art: 'progress', primaryHref: '#packages', secondaryHref: '#process' },
+] as const;
+const slides = t.slides.map((slide, index) => ({ ...slide, ...slideSetup[index] }));
+const total = slides.length;
+const collage = templates.filter((item) => item.thumbnail).slice(0, 3);
+// Steps shown on the progress card: pick, send data, build, live (from the work process section).
+const progressSteps = [0, 1, 3, 5].map((index) => all.workProcess.steps[index].title);
 ---
 
-<section class="hero">
-	<div class="hero-inner">
-		<div class="hero-content">
-			<p class="hero-eyebrow">{t.eyebrow}</p>
-			<h1>
-				<span class="hero-title-line">
-					<strong>{t.lead}</strong>
-					{t.connector}
-				</span>
-				<span class="hero-title-line">{t.secondLine}</span>
-				<span class="hero-title-line">
-					<strong>
-						<em>{t.emphasis}</em>
-					</strong>
-				</span>
-			</h1>
-			<div class="hero-price" aria-label={`${t.pricePrefix} ${t.price} — ${t.priceSuffix}`}>
-				<span class="hero-price-prefix">{t.pricePrefix}</span>
-				<strong>{t.price}</strong>
-				<span class="hero-price-suffix">{t.priceSuffix}</span>
-			</div>
-			<div class="hero-actions">
-				<Button class="hero-button" href="#contact">
-					{t.primary} <span>↗</span>
-				</Button>
-				<Button class="hero-button" variant="outline" href="#templates">
-					{t.secondary.replace('{count}', String(roundedTemplateCount()))} <span>↓</span>
-				</Button>
-			</div>
+<section class="hero" aria-roledescription="carousel" aria-label={t.label} data-carousel>
+	<div class="hero-slides" data-carousel-live aria-live="off">
+		{slides.map((slide, index) => {
+			const Title = index === 0 ? 'h1' : 'h2';
+			return (
+				<div
+					class:list={['hero-inner hero-slide', { 'is-active': index === 0 }]}
+					role="group"
+					aria-roledescription="slide"
+					aria-label={t.slideLabel.replace('{n}', String(index + 1)).replace('{total}', String(total))}
+					inert={index !== 0}
+					data-carousel-slide
+				>
+					<div class="hero-content" data-carousel-hold>
+						<p class="hero-eyebrow">{slide.eyebrow}</p>
+						<Title class="hero-title">
+							<span class="hero-title-line">
+								<strong>{fill(slide.lead)}</strong>
+								{slide.connector}
+							</span>
+							<span class="hero-title-line">{slide.secondLine}</span>
+							<span class="hero-title-line">
+								<strong>
+									<em>{slide.emphasis}</em>
+								</strong>
+							</span>
+						</Title>
+						<div class="hero-price">
+							<span class="hero-price-prefix">{slide.prefix}</span>
+							<strong>{fill(slide.value)}</strong>
+							<span class="hero-price-suffix">{slide.suffix}</span>
+						</div>
+						<div class="hero-actions">
+							<Button class="hero-button" href={slide.primaryHref}>
+								{fill(slide.primary)} <span>↗</span>
+							</Button>
+							<Button class="hero-button" variant="outline" href={slide.secondaryHref}>
+								{/* ↓ scrolls within the page, ↗ opens another page. */}
+								{fill(slide.secondary)} <span>{slide.secondaryHref.startsWith('#') ? '↓' : '↗'}</span>
+							</Button>
+						</div>
+					</div>
+					<div class:list={['hero-art', `hero-art-${slide.art}`]} aria-hidden="true">
+						<div class="hero-art-glow" />
+						{slide.art === 'mockup' && (
+							<picture>
+								<source srcset="/images/hero-browser-mockup.webp" type="image/webp" />
+								<img src="/images/hero-browser-mockup.png" alt="" width="1536" height="1024" fetchpriority="high" />
+							</picture>
+						)}
+						{slide.art === 'templates' && (
+							<div class="art-frame">
+								{collage.map((item) => (
+									<figure class="collage-card">
+										<span class="collage-bar">
+											<i />
+											<i />
+											<i />
+										</span>
+										<img src={`/images/templates/${item.code}.webp`} alt="" width="640" height="400" loading="lazy" decoding="async" />
+									</figure>
+								))}
+							</div>
+						)}
+						{slide.art === 'progress' && (
+							<div class="art-frame">
+								<div class="progress-card">
+									<div class="progress-head">
+										<strong>{t.progressTitle}</strong>
+										<span>{fill(slide.value)}</span>
+									</div>
+									<ol>
+										{progressSteps.map((step, stepIndex) => (
+											<li class:list={{ done: stepIndex < progressSteps.length - 1 }}>
+												<span class="progress-icon">{stepIndex < progressSteps.length - 1 ? '✓' : ''}</span>
+												{step}
+											</li>
+										))}
+									</ol>
+									<div class="progress-bar">
+										<span />
+									</div>
+								</div>
+							</div>
+						)}
+					</div>
+				</div>
+			);
+		})}
+	</div>
+	<div class="hero-controls" data-carousel-controls data-carousel-hold>
+		<button class="hero-control" type="button" aria-label={t.previous} data-carousel-prev>
+			←
+		</button>
+		<div class="hero-dots">
+			{slides.map((_, index) => (
+				<button
+					class:list={['hero-dot', { 'is-active': index === 0 }]}
+					type="button"
+					aria-label={t.goTo.replace('{n}', String(index + 1))}
+					aria-current={index === 0 ? 'true' : 'false'}
+					data-carousel-dot
+				/>
+			))}
 		</div>
-		<div class="hero-art" aria-hidden="true">
-			<div class="hero-art-glow"></div>
-			<picture>
-				<source srcset="/images/hero-browser-mockup.webp" type="image/webp" />
-				<img src="/images/hero-browser-mockup.png" alt="" width="1536" height="1024" fetchpriority="high" />
-			</picture>
-		</div>
+		<button class="hero-control" type="button" aria-label={t.next} data-carousel-next>
+			→
+		</button>
+		<button
+			class="hero-control hero-toggle"
+			type="button"
+			aria-label={t.pause}
+			data-label-pause={t.pause}
+			data-label-play={t.play}
+			data-carousel-toggle
+		>
+			<span class="toggle-pause" aria-hidden="true">
+				❚❚
+			</span>
+			<span class="toggle-play" aria-hidden="true">
+				▶
+			</span>
+		</button>
 	</div>
 </section>
+
+<script>
+	import { initCarousel } from '../../scripts/carousel';
+
+	const hero = document.querySelector<HTMLElement>('[data-carousel]');
+	if (hero) initCarousel(hero);
+</script>
 
 <style>
 	.hero {
@@ -84,13 +196,42 @@ const t = content[Astro.props.locale].hero;
 		transform: rotate(18deg);
 	}
 
+	.hero-slides {
+		position: relative;
+		z-index: 2;
+		display: grid;
+	}
+
+	/* Slides share one grid cell, so the hero keeps the height of the tallest slide. */
+	.hero-slide {
+		grid-area: 1 / 1;
+		opacity: 0;
+		visibility: hidden;
+		transform: translate3d(28px, 0, 0);
+		touch-action: pan-y;
+		transition:
+			opacity 0.6s ease,
+			transform 0.6s cubic-bezier(0.2, 0.72, 0.2, 1),
+			visibility 0s linear 0.6s;
+	}
+
+	.hero-slide.is-active {
+		opacity: 1;
+		visibility: visible;
+		transform: translate3d(0, 0, 0);
+		transition:
+			opacity 0.6s ease,
+			transform 0.6s cubic-bezier(0.2, 0.72, 0.2, 1),
+			visibility 0s;
+	}
+
 	.hero-inner {
 		position: relative;
 		z-index: 2;
 		width: min(100%, 1440px);
 		min-height: 720px;
 		margin: auto;
-		padding: calc(var(--header-height) + 4rem) clamp(1.5rem, 4vw, 4rem) 6rem;
+		padding: calc(var(--header-height) + 4rem) clamp(1.5rem, 4vw, 4rem) 8.5rem;
 		display: grid;
 		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
 		align-items: center;
@@ -119,7 +260,7 @@ const t = content[Astro.props.locale].hero;
 		text-transform: uppercase;
 	}
 
-	.hero h1 {
+	.hero-title {
 		margin: 0;
 		font-family: var(--font-display);
 		font-size: clamp(2.5rem, 3.8vw, 3.65rem);
@@ -134,17 +275,17 @@ const t = content[Astro.props.locale].hero;
 		white-space: nowrap;
 	}
 
-	.hero h1 strong {
+	.hero-title strong {
 		color: var(--foreground);
 		font-weight: 600;
 	}
 
-	.hero h1 > span:last-child strong {
+	.hero-title > span:last-child strong {
 		color: var(--primary);
 		text-shadow: none;
 	}
 
-	.hero h1 em {
+	.hero-title em {
 		position: relative;
 		display: inline-block;
 		padding-bottom: 0.16em;
@@ -152,7 +293,7 @@ const t = content[Astro.props.locale].hero;
 	}
 
 	/* Hand-drawn underline under the emphasised words. */
-	.hero h1 em::after {
+	.hero-title em::after {
 		content: '';
 		position: absolute;
 		left: -3%;
@@ -238,6 +379,272 @@ const t = content[Astro.props.locale].hero;
 		display: block;
 	}
 
+	.art-frame {
+		position: relative;
+		width: min(760px, 112%);
+		aspect-ratio: 3 / 2;
+	}
+
+	.collage-card {
+		position: absolute;
+		width: 60%;
+		margin: 0;
+		overflow: hidden;
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		box-shadow: 0 24px 50px rgba(90, 35, 10, 0.16);
+	}
+
+	.collage-card:nth-child(1) {
+		top: 6%;
+		left: 0;
+		transform: rotate(-5deg);
+	}
+
+	.collage-card:nth-child(2) {
+		top: 0;
+		right: 2%;
+		transform: rotate(4deg);
+	}
+
+	.collage-card:nth-child(3) {
+		bottom: 2%;
+		left: 22%;
+		z-index: 2;
+	}
+
+	.collage-bar {
+		height: 22px;
+		padding: 0 10px;
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		background: var(--muted-surface);
+	}
+
+	.collage-bar i {
+		width: 7px;
+		height: 7px;
+		background: var(--border);
+		border-radius: 50%;
+	}
+
+	.collage-bar i:first-child {
+		background: var(--primary);
+	}
+
+	.collage-card img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	.hero-art-progress .art-frame {
+		display: grid;
+		place-items: center;
+	}
+
+	.progress-card {
+		position: relative;
+		width: min(78%, 440px);
+		padding: clamp(1.25rem, 2.4vw, 2rem);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		box-shadow: 0 24px 50px rgba(90, 35, 10, 0.14);
+	}
+
+	.progress-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		font-family: var(--font-display);
+	}
+
+	.progress-head strong {
+		font-size: clamp(1rem, 1.4vw, 1.2rem);
+	}
+
+	.progress-head span {
+		padding: 0.35rem 0.7rem;
+		color: var(--primary);
+		background: var(--secondary);
+		border-radius: 8px;
+		font-size: 0.78rem;
+		font-weight: 700;
+	}
+
+	.progress-card ol {
+		margin: 1.4rem 0;
+		padding: 0;
+		display: grid;
+		gap: 0.85rem;
+		list-style: none;
+	}
+
+	.progress-card li {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		color: var(--muted);
+		font-size: clamp(0.82rem, 1vw, 0.92rem);
+		font-weight: 600;
+	}
+
+	.progress-card li.done {
+		color: var(--foreground);
+	}
+
+	.progress-icon {
+		width: 26px;
+		height: 26px;
+		flex: 0 0 26px;
+		display: grid;
+		place-items: center;
+		color: var(--primary-foreground);
+		border: 2px dashed rgba(255, 81, 0, 0.45);
+		border-radius: 50%;
+		font-size: 0.72rem;
+	}
+
+	.done .progress-icon {
+		background: var(--primary);
+		border: 0;
+	}
+
+	.progress-bar {
+		height: 8px;
+		overflow: hidden;
+		background: var(--secondary);
+		border-radius: 999px;
+	}
+
+	.progress-bar span {
+		width: 75%;
+		height: 100%;
+		display: block;
+		background: var(--primary);
+		border-radius: inherit;
+	}
+
+	/* Controls sit above the content sheet that overlaps the bottom of the hero. */
+	.hero-controls {
+		position: absolute;
+		z-index: 3;
+		right: 0;
+		bottom: 4.6rem;
+		left: 0;
+		width: min(100%, 1440px);
+		margin: auto;
+		padding-inline: clamp(1.5rem, 4vw, 4rem);
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.hero-control {
+		width: 40px;
+		height: 40px;
+		display: grid;
+		place-items: center;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		cursor: pointer;
+		font-size: 0.95rem;
+		transition: border-color 0.2s ease;
+	}
+
+	.hero-control[hidden] {
+		display: none;
+	}
+
+	.hero-control:hover {
+		border-color: rgba(255, 81, 0, 0.45);
+	}
+
+	.hero-control:focus-visible,
+	.hero-dot:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 2px;
+	}
+
+	.hero-toggle {
+		margin-left: 0.35rem;
+		font-size: 0.7rem;
+	}
+
+	.toggle-play,
+	.hero-toggle.is-stopped .toggle-pause {
+		display: none;
+	}
+
+	.hero-toggle.is-stopped .toggle-play {
+		display: inline;
+	}
+
+	.hero-dots {
+		display: flex;
+		align-items: center;
+	}
+
+	/* 24px-tall hit area with a thin pill inside; the active pill fills up as the 10s timer. */
+	.hero-dot {
+		position: relative;
+		width: 22px;
+		height: 24px;
+		padding: 0;
+		background: none;
+		border: 0;
+		cursor: pointer;
+		transition: width 0.3s ease;
+	}
+
+	.hero-dot::before,
+	.hero-dot::after {
+		content: '';
+		position: absolute;
+		top: 8px;
+		right: 6px;
+		bottom: 8px;
+		left: 6px;
+		border-radius: 999px;
+	}
+
+	.hero-dot::before {
+		background: rgba(15, 23, 42, 0.18);
+	}
+
+	.hero-dot.is-active {
+		width: 56px;
+	}
+
+	.hero-dot.is-active::before {
+		background: rgba(255, 81, 0, 0.2);
+	}
+
+	.hero-dot.is-active::after {
+		background: var(--primary);
+		transform-origin: left center;
+		animation: hero-progress 10s linear forwards;
+	}
+
+	.hero.is-paused .hero-dot::after {
+		animation-play-state: paused;
+	}
+
+	@keyframes hero-progress {
+		from {
+			transform: scaleX(0);
+		}
+		to {
+			transform: scaleX(1);
+		}
+	}
+
 	@keyframes hero-content-in {
 		from {
 			opacity: 0;
@@ -265,12 +672,15 @@ const t = content[Astro.props.locale].hero;
 			grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
 			gap: 2.75rem;
 		}
-		.hero h1 {
+		.hero-title {
 			font-size: clamp(2.15rem, 4.6vw, 2.85rem);
 		}
 		.hero-art img {
 			width: 112%;
 			margin-left: 0;
+		}
+		.art-frame {
+			width: 112%;
 		}
 	}
 
@@ -281,14 +691,14 @@ const t = content[Astro.props.locale].hero;
 		.hero-inner {
 			min-height: auto;
 			padding-top: calc(var(--header-height) + 4rem);
-			padding-bottom: 5rem;
+			padding-bottom: 7.5rem;
 			grid-template-columns: 1fr;
 			gap: 3.5rem;
 		}
 		.hero-content {
 			max-width: 700px;
 		}
-		.hero h1 {
+		.hero-title {
 			font-size: clamp(2.1rem, 7vw, 3.25rem);
 		}
 		.hero-actions {
@@ -302,10 +712,17 @@ const t = content[Astro.props.locale].hero;
 			width: 108%;
 			margin-left: -4%;
 		}
+		.art-frame {
+			width: 100%;
+		}
+		.hero-controls {
+			bottom: 3rem;
+			justify-content: center;
+		}
 	}
 
 	@media (max-width: 560px) {
-		.hero h1 {
+		.hero-title {
 			font-size: clamp(1.65rem, 7.4vw, 2.2rem);
 		}
 		.hero-actions {
@@ -335,9 +752,15 @@ const t = content[Astro.props.locale].hero;
 	@media (prefers-reduced-motion: reduce) {
 		.hero-content,
 		.hero-art,
-		.hero-button span {
+		.hero-button span,
+		.hero-slide,
+		.hero-dot {
 			animation: none !important;
 			transition: none !important;
+		}
+		/* No timer animation means no automatic rotation; the active pill is shown full. */
+		.hero-dot.is-active::after {
+			animation: none;
 		}
 	}
 </style>
