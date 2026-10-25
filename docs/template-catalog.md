@@ -42,7 +42,7 @@ Label ada di `src/i18n/content.ts` (`templateCategories`). Urutan tab mengikuti 
 
 - Template yang ada di `live-previews.json` **tampil paling depan** di kategorinya, dengan tombol **Live preview**.
 - Daftar "Semua" **diselang-seling antarkategori** supaya halaman pertama bervariasi.
-- Home menampilkan 6 template per tab. Katalog menampilkan 24 per halaman.
+- Home menampilkan 6 template per tab. Katalog menampilkan 12 per halaman.
 
 ## Thumbnail
 

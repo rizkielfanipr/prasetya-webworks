@@ -40,6 +40,7 @@ const structuredData = [
 		logo: new URL(site.logoSquare, Astro.site).href,
 		image: new URL(site.ogImage, Astro.site).href,
 		email: site.email,
+		telephone: `+${site.whatsapp}`,
 		areaServed: { '@type': 'Country', name: 'Indonesia' },
 		address: { '@type': 'PostalAddress', addressCountry: 'ID' },
 		makesOffer: t.packages.map((item) => ({
@@ -91,7 +92,7 @@ const structuredData = [
 		'.template-card',
 		'.process-timeline li',
 		'.faq-list details',
-		'.contact-banner',
+		'.cta-banner',
 		'.testimonial-heading',
 		'.testimonial-marquees',
 	]);

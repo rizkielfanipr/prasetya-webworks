@@ -1,0 +1,49 @@
+---
+/** Required checkbox: the visitor agrees that the order is confirmed over WhatsApp. */
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale].orderForm;
+---
+
+<label class="order-consent">
+	<input name="consent" type="checkbox" required />
+	<span>{t.consent}</span>
+</label>
+
+<style>
+	.order-consent {
+		margin: 0.2rem 0 1rem;
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		color: var(--ink);
+		font-size: 0.61rem;
+		font-weight: 500;
+		letter-spacing: 0;
+		line-height: 1.5;
+	}
+
+	.order-consent input {
+		width: 16px;
+		height: 16px;
+		margin: 0.1rem 0 0;
+		padding: 0;
+		flex: 0 0 16px;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.75);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		outline: none;
+		font-size: 0.76rem;
+		accent-color: var(--primary);
+	}
+
+	.order-consent input:focus {
+		border-color: var(--blue);
+		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+	}
+</style>

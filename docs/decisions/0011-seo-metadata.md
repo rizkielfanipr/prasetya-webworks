@@ -15,7 +15,7 @@ Situs harus muncul di Google dengan judul dan deskripsi yang jelas ("Prasetya We
 - `Layout.astro` merender `<title>`, meta description, canonical, hreflang absolut, Open Graph dan Twitter card. Teks judul dan deskripsi home ada di `meta` pada `src/i18n/content.ts`; katalog memakai `catalog.metaDescription*`.
 - Gambar pratinjau 1200×630 di `public/images/og-image.png` (`site.ogImage`).
 - Home menyertakan JSON-LD `WebSite` dan `ProfessionalService` (nama, URL, logo, email, wilayah, dan paket sebagai `Offer` dengan harga IDR), lewat prop `structuredData` di `Layout`.
-- Nomor telepon dan profil sosial media belum dimasukkan ke JSON-LD selama masih placeholder.
+- Nomor WhatsApp masuk ke JSON-LD sebagai `telephone`. Profil sosial media (`sameAs`) belum dimasukkan selama URL-nya masih placeholder.
 
 ## Konsekuensi
 

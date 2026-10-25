@@ -8,6 +8,8 @@ export default defineConfig({
 	site: 'https://prasetyawebworks.web.id',
 	integrations: [
 		sitemap({
+			// The order form is marked noindex, so it stays out of the sitemap too.
+			filter: (page) => !page.includes('/order/'),
 			i18n: {
 				defaultLocale: 'id',
 				locales: { id: 'id-ID', en: 'en-US' },

@@ -15,9 +15,11 @@ interface Props {
 	alternates?: { id: string; en: string };
 	/** schema.org objects rendered as JSON-LD (see HomePage). */
 	structuredData?: object[];
+	/** Keep utility pages such as the order form out of search results. */
+	noindex?: boolean;
 }
 
-const { lang = 'id', alternates = { id: '/', en: '/en/' }, structuredData = [] } = Astro.props;
+const { lang = 'id', alternates = { id: '/', en: '/en/' }, structuredData = [], noindex = false } = Astro.props;
 const meta = content[lang].meta;
 const { title = meta.title, description = meta.description } = Astro.props;
 // Search engines and social previews need absolute URLs; `site` is set in astro.config.mjs.
@@ -32,6 +34,7 @@ const image = absolute(site.ogImage);
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<meta name="description" content={description} />
+		{noindex && <meta name="robots" content="noindex" />}
 		<meta name="theme-color" content="#fffaf4" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

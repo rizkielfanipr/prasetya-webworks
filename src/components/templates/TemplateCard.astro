@@ -1,7 +1,6 @@
 ---
 import { content, type Locale } from '../../i18n/content';
-import { livePreviewUrl, type TemplateCategory, type TemplateItem } from '../../data/templates';
-import { whatsappUrl } from '../../scripts/whatsapp';
+import { livePreviewUrl, orderPath, type TemplateCategory, type TemplateItem } from '../../data/templates';
 
 interface Props {
 	item: TemplateItem;
@@ -11,10 +10,10 @@ interface Props {
 
 const { item, locale, hidden = false } = Astro.props;
 const t = content[locale].templatesIntro;
-const request = t.request.replace('{code}', item.code).replace('{name}', item.name);
 const preview = livePreviewUrl(item);
 ---
 
+{/* data-card-* hooks let the catalog search fill a copy of this card for any template. */}
 <article class="template-card" data-category={item.category} hidden={hidden}>
 	<div class="template-screen">
 		{item.thumbnail ? (
@@ -25,22 +24,30 @@ const preview = livePreviewUrl(item);
 				height="400"
 				loading="lazy"
 				decoding="async"
+				data-card-image
 			/>
 		) : (
-			<span class="template-placeholder">{item.name}</span>
+			<span class="template-placeholder" data-card-image>
+				{item.name}
+			</span>
 		)}
-		<span class="template-index">#{item.code}</span>
+		<span class="template-index" data-card-code>
+			#{item.code}
+		</span>
 	</div>
 	<div class="template-meta">
-		<span class="template-category">{content[locale].templateCategories[item.category as TemplateCategory]}</span>
-		<h3>{item.name}</h3>
-		<p>
+		<span class="template-category" data-card-category>
+			{content[locale].templateCategories[item.category as TemplateCategory]}
+		</span>
+		<h3 data-card-name>{item.name}</h3>
+		<p data-card-meta>
 			{item.type} · {item.pages} {t.pages}
 		</p>
 		<div class="template-actions">
 			{preview && (
 				<a
 					class="template-preview"
+					data-card-preview
 					href={preview}
 					target="_blank"
 					rel="noopener"
@@ -49,8 +56,8 @@ const preview = livePreviewUrl(item);
 					{t.livePreview} <span aria-hidden="true">↗</span>
 				</a>
 			)}
-			{/* "Choose template" opens WhatsApp with the template code and name already written. */}
-			<a class="template-select" href={whatsappUrl(request)} target="_blank" rel="noopener">
+			{/* "Choose template" opens the order form with this template already chosen. */}
+			<a class="template-select" href={orderPath(locale, item.code)} data-card-select>
 				{t.select} <span aria-hidden="true">↗</span>
 			</a>
 		</div>

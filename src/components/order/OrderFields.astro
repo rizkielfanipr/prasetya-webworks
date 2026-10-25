@@ -1,0 +1,121 @@
+---
+/**
+ * Customer fields of an order: name, WhatsApp, email, business, preferred domain and notes.
+ * The domain extension is chosen elsewhere (radios named "extension"); the parent's script
+ * writes it into [data-domain-suffix].
+ */
+import { content, type Locale } from '../../i18n/content';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale].orderForm;
+---
+
+<div class="order-fields">
+	<div class="field-row">
+		<label>
+			{t.name}
+			<input name="name" type="text" autocomplete="name" placeholder={t.namePlaceholder} required />
+		</label>
+		<label>
+			{t.whatsapp}
+			<input name="whatsapp" type="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required />
+		</label>
+	</div>
+	<label>
+		{t.email}
+		<input name="email" type="email" autocomplete="email" placeholder="nama@email.com" required />
+	</label>
+	<label>
+		{t.business}
+		<input name="business" type="text" autocomplete="organization" placeholder={t.businessPlaceholder} required />
+	</label>
+	<label>
+		{t.domain}
+		<span class="domain-input">
+			<input
+				name="domain"
+				type="text"
+				inputmode="url"
+				autocapitalize="none"
+				spellcheck="false"
+				placeholder={t.domainPlaceholder}
+				required
+			/>
+			<span aria-hidden="true" data-domain-suffix></span>
+		</span>
+	</label>
+	<label>
+		<span class="label-text">
+			{t.notes} <span>{t.optional}</span>
+		</span>
+		<textarea name="notes" rows="3" placeholder={t.notesPlaceholder}></textarea>
+	</label>
+</div>
+
+<style>
+	.order-fields label {
+		margin-bottom: 0.85rem;
+		display: grid;
+		gap: 0.42rem;
+		color: var(--ink);
+		font-size: 0.61rem;
+		font-weight: 700;
+		letter-spacing: 0.035em;
+	}
+
+	.label-text > span {
+		color: var(--muted);
+		font-weight: 400;
+	}
+
+	.order-fields input,
+	.order-fields textarea {
+		width: 100%;
+		padding: 0.8rem 0.85rem;
+		color: var(--ink);
+		background: rgba(255, 255, 255, 0.75);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		outline: none;
+		font-size: 0.76rem;
+	}
+
+	.order-fields input:focus,
+	.order-fields textarea:focus {
+		border-color: var(--blue);
+		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+	}
+
+	.domain-input {
+		display: flex;
+		align-items: stretch;
+		background: rgba(255, 255, 255, 0.75);
+		border: 1px solid var(--line);
+		border-radius: 12px;
+	}
+
+	.domain-input:focus-within {
+		border-color: var(--blue);
+		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+	}
+
+	.order-fields .domain-input input {
+		min-width: 0;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	.domain-input span {
+		padding: 0 0.85rem;
+		display: flex;
+		align-items: center;
+		color: var(--muted);
+		border-left: 1px solid var(--line);
+		font-size: 0.76rem;
+		font-weight: 600;
+	}
+</style>

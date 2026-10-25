@@ -1,7 +1,8 @@
 ---
 /**
- * A row of pill-shaped filters. As links (catalog: each filter is its own page) or as toggle buttons
+ * A row of filters. As links (catalog: each filter is its own page) or as toggle buttons
  * handled by page script (home preview), where `aria-pressed` marks the active one.
+ * `chips` are bordered pills; `tabs` are plain labels with an underline on the active one.
  */
 interface Item {
 	label: string;
@@ -18,13 +19,15 @@ interface Props {
 	/** Accessible name of the group. */
 	label: string;
 	id?: string;
+	variant?: 'chips' | 'tabs';
 }
 
-const { items, mode, label, id } = Astro.props;
+const { items, mode, label, id, variant = 'chips' } = Astro.props;
+const classes = ['filter-chips', `filter-chips--${variant}`];
 ---
 
 {mode === 'link' ? (
-	<nav class="filter-chips" id={id} aria-label={label}>
+	<nav class:list={classes} id={id} aria-label={label}>
 		{items.map((item) => (
 			<a class="filter-chip" href={item.href} aria-current={item.active ? 'page' : undefined}>
 				{item.label}
@@ -32,7 +35,7 @@ const { items, mode, label, id } = Astro.props;
 		))}
 	</nav>
 ) : (
-	<div class="filter-chips" id={id} role="group" aria-label={label}>
+	<div class:list={classes} id={id} role="group" aria-label={label}>
 		{items.map((item) => (
 			<button class="filter-chip" type="button" aria-pressed={item.active ? 'true' : 'false'} {...item.data}>
 				{item.label}
@@ -88,6 +91,52 @@ const { items, mode, label, id } = Astro.props;
 		outline-offset: 2px;
 	}
 
+	/* Tabs scroll sideways inside their own row instead of wrapping. */
+	.filter-chips--tabs {
+		margin-bottom: 1.75rem;
+		justify-content: flex-start;
+		flex-wrap: nowrap;
+		gap: 1.75rem;
+		overflow-x: auto;
+		border-bottom: 1px solid var(--border);
+		scrollbar-width: none;
+	}
+
+	.filter-chips--tabs .filter-chip {
+		padding: 0.75rem 0 0.85rem;
+		position: relative;
+		color: var(--foreground);
+		background: none;
+		border: 0;
+		border-radius: 0;
+		font-size: 0.92rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		white-space: nowrap;
+	}
+
+	.filter-chips--tabs .filter-chip:hover {
+		color: var(--primary);
+	}
+
+	.filter-chips--tabs .filter-chip[aria-pressed='true'],
+	.filter-chips--tabs .filter-chip[aria-current] {
+		color: var(--primary);
+		background: none;
+	}
+
+	.filter-chips--tabs .filter-chip[aria-pressed='true']::after,
+	.filter-chips--tabs .filter-chip[aria-current]::after {
+		content: '';
+		position: absolute;
+		right: 0;
+		bottom: -1px;
+		left: 0;
+		height: 2px;
+		background: var(--primary);
+		border-radius: 2px;
+	}
+
 	@media (max-width: 560px) {
 		.filter-chips {
 			gap: 0.4rem;
@@ -95,6 +144,13 @@ const { items, mode, label, id } = Astro.props;
 		.filter-chip {
 			padding: 0.5rem 0.8rem;
 			font-size: 0.64rem;
+		}
+		.filter-chips--tabs {
+			gap: 1.25rem;
+		}
+		.filter-chips--tabs .filter-chip {
+			padding: 0.65rem 0 0.75rem;
+			font-size: 0.85rem;
 		}
 	}
 </style>

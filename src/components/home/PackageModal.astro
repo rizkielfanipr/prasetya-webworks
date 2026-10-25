@@ -1,4 +1,6 @@
 ---
+import OrderFields from '../order/OrderFields.astro';
+import OrderConsent from '../order/OrderConsent.astro';
 import { content, type Locale } from '../../i18n/content';
 import { site } from '../../config/site';
 
@@ -6,7 +8,8 @@ interface Props {
 	locale: Locale;
 }
 
-const { modal: t } = content[Astro.props.locale];
+const { locale } = Astro.props;
+const { modal: t, orderForm: f } = content[locale];
 ---
 
 <dialog class="package-modal" id="package-modal" aria-labelledby="package-modal-title">
@@ -23,7 +26,7 @@ const { modal: t } = content[Astro.props.locale];
 			<ul data-modal-package-features></ul>
 			{/* Radios live here but belong to the order form through the form attribute. */}
 			<fieldset class="domain-choice">
-				<legend class="summary-title">{t.domainChoice}</legend>
+				<legend class="summary-title">{f.domainChoice}</legend>
 				<div class="domain-options" data-modal-domains></div>
 			</fieldset>
 			<ul class="summary-notes">
@@ -36,64 +39,23 @@ const { modal: t } = content[Astro.props.locale];
 		<form
 			class="package-order-form"
 			id="package-order-form"
-			data-greeting={t.summary.greeting.replace('{site}', site.name)}
-			data-package-label={t.summary.package}
-			data-price-label={t.summary.price}
-			data-name-label={t.summary.name}
-			data-business-label={t.summary.business}
-			data-domain-label={t.summary.domain}
-			data-email-label={t.summary.email}
-			data-whatsapp-label={t.summary.whatsapp}
-			data-notes-label={t.summary.notes}
-			data-sent-status={t.sent}
+			data-greeting={f.summary.greeting.replace('{site}', site.name)}
+			data-package-label={f.summary.package}
+			data-price-label={f.summary.price}
+			data-name-label={f.summary.name}
+			data-business-label={f.summary.business}
+			data-domain-label={f.summary.domain}
+			data-email-label={f.summary.email}
+			data-whatsapp-label={f.summary.whatsapp}
+			data-notes-label={f.summary.notes}
+			data-sent-status={f.sent}
 		>
 			<h2>{t.title}</h2>
 			<p>{t.description}</p>
-			<div class="field-row">
-				<label>
-					{t.name}
-					<input name="name" type="text" autocomplete="name" placeholder={t.namePlaceholder} required />
-				</label>
-				<label>
-					{t.whatsapp}
-					<input name="whatsapp" type="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" required />
-				</label>
-			</div>
-			<label>
-				{t.email}
-				<input name="email" type="email" autocomplete="email" placeholder="nama@email.com" required />
-			</label>
-			<label>
-				{t.business}
-				<input name="business" type="text" autocomplete="organization" placeholder={t.businessPlaceholder} required />
-			</label>
-			<label>
-				{t.domain}
-				<span class="domain-input">
-					<input
-						name="domain"
-						type="text"
-						inputmode="url"
-						autocapitalize="none"
-						spellcheck="false"
-						placeholder={t.domainPlaceholder}
-						required
-					/>
-					<span aria-hidden="true" data-domain-suffix></span>
-				</span>
-			</label>
-			<label>
-				<span class="label-text">
-					{t.notes} <span>{t.optional}</span>
-				</span>
-				<textarea name="notes" rows="3" placeholder={t.notesPlaceholder}></textarea>
-			</label>
-			<label class="consent">
-				<input name="consent" type="checkbox" required />
-				<span>{t.consent}</span>
-			</label>
+			<OrderFields locale={locale} />
+			<OrderConsent locale={locale} />
 			<button class="order-submit" type="submit">
-				{t.submit} <span aria-hidden="true">↗</span>
+				{f.submit} <span aria-hidden="true">↗</span>
 			</button>
 			<p class="order-status" role="status" aria-live="polite"></p>
 		</form>
@@ -102,6 +64,7 @@ const { modal: t } = content[Astro.props.locale];
 
 <script>
 	import { openWhatsApp } from '../../scripts/whatsapp';
+	import { domainName, orderMessage } from '../../scripts/order';
 
 	interface SelectedPackage {
 		name: string;
@@ -172,27 +135,18 @@ const { modal: t } = content[Astro.props.locale];
 		if (!selected) return;
 		const data = new FormData(form);
 		const label = form.dataset;
-		// Keep only the name part; the extension comes from the chosen radio.
-		const domainName = String(data.get('domain'))
-			.trim()
-			.toLowerCase()
-			.replace(/\s+/g, '')
-			.replace(/^https?:\/\//, '')
-			.replace(/^www\./, '')
-			.split('.')[0];
-		const lines = [
-			label.greeting,
-			'',
-			`${label.packageLabel}: ${selected.name}`,
-			`${label.priceLabel}: ${selected.price}`,
-			`${label.nameLabel}: ${data.get('name')}`,
-			`${label.businessLabel}: ${data.get('business')}`,
-			`${label.domainLabel}: ${domainName}${data.get('extension') ?? ''}`,
-			`${label.emailLabel}: ${data.get('email')}`,
-			`${label.whatsappLabel}: ${data.get('whatsapp')}`,
-			`${label.notesLabel}: ${String(data.get('notes')).trim() || '-'}`,
-		];
-		openWhatsApp(lines.join('\n'));
+		openWhatsApp(
+			orderMessage(label.greeting ?? '', [
+				[label.packageLabel ?? '', selected.name],
+				[label.priceLabel ?? '', selected.price],
+				[label.nameLabel ?? '', String(data.get('name'))],
+				[label.businessLabel ?? '', String(data.get('business'))],
+				[label.domainLabel ?? '', `${domainName(String(data.get('domain')))}${data.get('extension') ?? ''}`],
+				[label.emailLabel ?? '', String(data.get('email'))],
+				[label.whatsappLabel ?? '', String(data.get('whatsapp'))],
+				[label.notesLabel ?? '', String(data.get('notes'))],
+			]),
+		);
 		const status = form.querySelector<HTMLElement>('.order-status');
 		if (status) status.textContent = label.sentStatus ?? '';
 	});
@@ -404,88 +358,6 @@ const { modal: t } = content[Astro.props.locale];
 		color: var(--muted);
 		font-size: 0.76rem;
 		line-height: 1.6;
-	}
-
-	.package-order-form label {
-		margin-bottom: 0.85rem;
-		display: grid;
-		gap: 0.42rem;
-		color: var(--ink);
-		font-size: 0.61rem;
-		font-weight: 700;
-		letter-spacing: 0.035em;
-	}
-
-	.label-text > span {
-		color: var(--muted);
-		font-weight: 400;
-	}
-
-	.package-order-form input,
-	.package-order-form textarea {
-		width: 100%;
-		padding: 0.8rem 0.85rem;
-		color: var(--ink);
-		background: rgba(255, 255, 255, 0.75);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-		outline: none;
-		font-size: 0.76rem;
-	}
-
-	.package-order-form input:focus,
-	.package-order-form textarea:focus {
-		border-color: var(--blue);
-		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
-	}
-
-	.domain-input {
-		display: flex;
-		align-items: stretch;
-		background: rgba(255, 255, 255, 0.75);
-		border: 1px solid var(--line);
-		border-radius: 12px;
-	}
-
-	.domain-input:focus-within {
-		border-color: var(--blue);
-		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
-	}
-
-	.package-order-form .domain-input input {
-		min-width: 0;
-		background: transparent;
-		border: 0;
-		box-shadow: none;
-	}
-
-	.domain-input span {
-		padding: 0 0.85rem;
-		display: flex;
-		align-items: center;
-		color: var(--muted);
-		border-left: 1px solid var(--line);
-		font-size: 0.76rem;
-		font-weight: 600;
-	}
-
-	.package-order-form .consent {
-		margin: 0.2rem 0 1rem;
-		display: flex;
-		align-items: flex-start;
-		gap: 0.6rem;
-		font-weight: 500;
-		letter-spacing: 0;
-		line-height: 1.5;
-	}
-
-	.package-order-form .consent input {
-		width: 16px;
-		height: 16px;
-		margin: 0.1rem 0 0;
-		padding: 0;
-		flex: 0 0 16px;
-		accent-color: var(--primary);
 	}
 
 	.order-submit {

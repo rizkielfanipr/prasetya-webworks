@@ -114,7 +114,7 @@ Belum ada tes otomatis. Minimal lakukan:
 2. Buka hasil `npm run preview` dan cek:
    - home ID dan EN, katalog, satu halaman kategori, dan satu halaman pagination;
    - lebar HP (360 px dan 414 px), tablet (768 px), dan desktop, tanpa scroll horizontal;
-   - tab filter, tombol "Lihat semua", "Pilih template" (membuka WhatsApp dengan kode template), modal paket, menu mobile, dan Live preview.
+   - tab filter, tombol "Lihat semua", "Pilih template" (membuka form `/order/` dengan template terisi; isi 3 langkah sampai WhatsApp terbuka), modal paket, menu mobile, dan Live preview.
 3. Kalau mengubah layout hero atau kartu, perhatikan perbedaan font antar platform. Android tidak punya font serif yang dipakai judul (lihat [troubleshooting.md](troubleshooting.md)).
 
 **Untuk refactor**, yaitu perubahan yang seharusnya tidak mengubah tampilan: ambil screenshot satu halaman penuh **sebelum dan sesudah** di beberapa lebar layar, dengan `prefers-reduced-motion: reduce` supaya animasi tidak ikut, lalu bandingkan piksel per piksel. Cara ini dipakai saat merapikan `index.astro` menjadi komponen per section, dan hasilnya home identik 0 piksel.

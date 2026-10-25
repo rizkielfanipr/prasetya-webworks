@@ -2,8 +2,8 @@
 export const site = {
 	name: 'Prasetya Webworks',
 	email: 'hello@prasetyawebworks.com',
-	/** WhatsApp number that receives package orders, international format without "+". Placeholder: replace before deploying. */
-	whatsapp: '6281234567890',
+	/** WhatsApp number that receives orders and questions, international format without "+". */
+	whatsapp: '628995449805',
 	/** Logo for light backgrounds, and the white-text version for dark ones (see docs/design.md). */
 	logo: '/images/prasetya-webworks-logo.svg',
 	logoOnDark: '/images/prasetya-webworks-logo-white.svg',

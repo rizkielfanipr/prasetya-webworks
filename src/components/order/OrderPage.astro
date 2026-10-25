@@ -1,0 +1,839 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../layout/SiteHeader.astro';
+import SiteFooter from '../layout/SiteFooter.astro';
+import SectionIntro from '../ui/SectionIntro.astro';
+import OrderFields from './OrderFields.astro';
+import OrderConsent from './OrderConsent.astro';
+import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
+import { catalogPath, homePath, orderPath } from '../../data/templates';
+import { whatsappUrl } from '../../scripts/whatsapp';
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const all = content[locale];
+const t = all.order;
+const f = all.orderForm;
+// The form follows the first three steps of the work process; the rest happens after the order is sent.
+const formSteps = all.workProcess.steps.slice(0, 3).map((step) => step.title);
+const afterSteps = all.workProcess.steps.slice(3);
+const stepCount = (n: number) => t.stepOf.replace('{n}', String(n)).replace('{total}', String(formSteps.length));
+const packages = all.packages.map((item) => ({
+	...item,
+	// "Landing Professional" → "landing-professional", also accepted as ?package= in the URL.
+	slug: item.name.toLowerCase().replace(/\s+/g, '-'),
+	popular: 'popular' in item && item.popular,
+}));
+const alternates = { id: orderPath('id'), en: orderPath('en') };
+---
+
+<Layout lang={locale} title={`${t.metaTitle} — ${site.name}`} description={t.metaDescription} alternates={alternates} noindex>
+	<SiteHeader locale={locale} alternates={alternates} />
+
+	<main class="order-page" id="top">
+		<div class="order-container">
+			<SectionIntro
+				id="order-title"
+				level="h1"
+				layout="split"
+				eyebrow={t.eyebrow}
+				title={t.title}
+				emphasis={t.emphasis}
+				description={t.description}
+			/>
+
+			<div class="order-layout">
+				<form
+					class="order-card"
+					id="order-form"
+					data-index-url="/templates/search.json"
+					data-categories={JSON.stringify(all.templateCategories)}
+					data-pages-label={all.templatesIntro.pages}
+					data-template-none={t.templateNone}
+					data-template-change={t.templateChange}
+					data-template-loading={t.templateLoading}
+					data-greeting={f.summary.greeting.replace('{site}', site.name)}
+					data-label-template={f.summary.template}
+					data-label-package={f.summary.package}
+					data-label-price={f.summary.price}
+					data-label-name={f.summary.name}
+					data-label-business={f.summary.business}
+					data-label-domain={f.summary.domain}
+					data-label-email={f.summary.email}
+					data-label-whatsapp={f.summary.whatsapp}
+					data-label-notes={f.summary.notes}
+					data-sent={f.sent}
+				>
+					<ol class="order-steps" aria-label={t.stepsLabel}>
+						{formSteps.map((title, index) => (
+							<li class:list={{ 'is-current': index === 0 }} data-step-indicator>
+								<span aria-hidden="true">{index + 1}</span>
+								{title}
+							</li>
+						))}
+					</ol>
+
+					<section class="order-step" aria-labelledby="order-step-1" data-order-step>
+						<p class="step-count">{stepCount(1)}</p>
+						<h2 id="order-step-1" tabindex="-1">
+							{formSteps[0]}
+						</h2>
+						<p class="step-note" data-template-message>
+							{t.templateEmpty}
+						</p>
+						<figure class="chosen-template" data-template-preview hidden>
+							<img alt="" width="640" height="400" data-template-image />
+							<figcaption>
+								<span class="chosen-category" data-template-category></span>
+								<strong data-template-name></strong>
+								<span class="chosen-meta" data-template-meta></span>
+							</figcaption>
+						</figure>
+						<input type="hidden" name="template" />
+						<div class="step-actions">
+							<a class="step-secondary" href={catalogPath(locale)} data-template-browse>
+								{t.templateBrowse}
+							</a>
+							<button class="step-primary" type="button" data-step-next>
+								{t.next} <span aria-hidden="true">→</span>
+							</button>
+						</div>
+					</section>
+
+					<section class="order-step" aria-labelledby="order-step-2" data-order-step hidden>
+						<p class="step-count">{stepCount(2)}</p>
+						<h2 id="order-step-2" tabindex="-1">
+							{formSteps[1]}
+						</h2>
+						<p class="step-note">{t.dataIntro}</p>
+						<OrderFields locale={locale} />
+						<div class="step-actions">
+							<button class="step-secondary" type="button" data-step-back>
+								<span aria-hidden="true">←</span>
+								{t.back}
+							</button>
+							<button class="step-primary" type="button" data-step-next>
+								{t.next} <span aria-hidden="true">→</span>
+							</button>
+						</div>
+					</section>
+
+					<section class="order-step" aria-labelledby="order-step-3" data-order-step hidden>
+						<p class="step-count">{stepCount(3)}</p>
+						<h2 id="order-step-3" tabindex="-1">
+							{formSteps[2]}
+						</h2>
+						<fieldset class="order-group">
+							<legend>{t.packageTitle}</legend>
+							<p class="step-note">{t.packageIntro}</p>
+							<div class="package-options">
+								{packages.map((item) => (
+									<label class="package-option">
+										<input
+											type="radio"
+											name="package"
+											value={item.slug}
+											checked={item.popular}
+											required
+											data-name={item.name}
+											data-price={item.price}
+											data-domains={JSON.stringify(item.domains)}
+										/>
+										<span class="package-option-head">
+											<strong>{item.name}</strong>
+											<span>{item.price}</span>
+										</span>
+										<span class="package-option-tagline">{item.tagline}</span>
+										<span class="package-option-meta">
+											{item.domains.join(' / ')} ·{' '}
+											{t.packageMeta.replace('{revisions}', item.revisions).replace('{estimate}', item.estimate)}
+										</span>
+									</label>
+								))}
+							</div>
+						</fieldset>
+						<fieldset class="order-group">
+							<legend>{f.domainChoice}</legend>
+							<div class="domain-options" data-domain-options></div>
+						</fieldset>
+						<div class="order-summary">
+							<h3>{t.summaryTitle}</h3>
+							<dl data-order-summary></dl>
+						</div>
+						<OrderConsent locale={locale} />
+						<div class="step-actions">
+							<button class="step-secondary" type="button" data-step-back>
+								<span aria-hidden="true">←</span>
+								{t.back}
+							</button>
+							<button class="step-primary" type="submit">
+								{f.submit} <span aria-hidden="true">↗</span>
+							</button>
+						</div>
+						<p class="order-status" role="status" aria-live="polite" data-order-status></p>
+					</section>
+				</form>
+
+				<aside class="order-aside" aria-labelledby="order-after-title">
+					<h2 id="order-after-title">{t.afterTitle}</h2>
+					<p>{t.afterIntro}</p>
+					<ol class="after-steps">
+						{afterSteps.map((step, index) => (
+							<li>
+								<span aria-hidden="true">{index + formSteps.length + 1}</span>
+								<div>
+									<strong>{step.title}</strong>
+									<p>{step.description}</p>
+									{step.note && <small>{step.note}</small>}
+								</div>
+							</li>
+						))}
+					</ol>
+					<div class="order-help">
+						<p>{t.help}</p>
+						<a href={whatsappUrl(t.helpMessage.replace('{site}', site.name))} target="_blank" rel="noopener">
+							<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+							{t.helpLink}
+						</a>
+					</div>
+				</aside>
+			</div>
+		</div>
+	</main>
+
+	<SiteFooter locale={locale} home={homePath(locale)} />
+</Layout>
+
+<script>
+	import { openWhatsApp } from '../../scripts/whatsapp';
+	import { domainName, orderMessage } from '../../scripts/order';
+
+	interface Entry {
+		code: string;
+		name: string;
+		category: string;
+		type: string;
+		pages: number;
+		thumbnail: boolean;
+	}
+
+	const form = document.querySelector<HTMLFormElement>('#order-form');
+	if (form) {
+		const label = form.dataset;
+		const steps = Array.from(form.querySelectorAll<HTMLElement>('[data-order-step]'));
+		const indicators = Array.from(form.querySelectorAll<HTMLElement>('[data-step-indicator]'));
+		const summary = form.querySelector<HTMLElement>('[data-order-summary]');
+		const domainOptions = form.querySelector<HTMLElement>('[data-domain-options]');
+		const suffix = form.querySelector<HTMLElement>('[data-domain-suffix]');
+		const templateInput = form.querySelector<HTMLInputElement>('input[name="template"]');
+		let current = 0;
+
+		const selectedPackage = () => form.querySelector<HTMLInputElement>('input[name="package"]:checked');
+
+		function show(index: number) {
+			current = index;
+			steps.forEach((step, i) => (step.hidden = i !== index));
+			indicators.forEach((item, i) => {
+				item.classList.toggle('is-current', i === index);
+				item.classList.toggle('is-done', i < index);
+				if (i === index) item.setAttribute('aria-current', 'step');
+				else item.removeAttribute('aria-current');
+			});
+			if (index === steps.length - 1) renderSummary();
+			// Bring the step into view below the fixed header and move focus to its heading.
+			const header = document.querySelector<HTMLElement>('[data-site-header]')?.offsetHeight ?? 0;
+			window.scrollTo({ top: form!.getBoundingClientRect().top + window.scrollY - header - 16 });
+			steps[index].querySelector<HTMLElement>('h2')?.focus({ preventScroll: true });
+		}
+
+		// Fields of the current step must be valid before moving on.
+		function stepIsValid() {
+			const fields = Array.from(steps[current].querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea'));
+			const invalid = fields.find((field) => !field.checkValidity());
+			invalid?.reportValidity();
+			return !invalid;
+		}
+
+		form.querySelectorAll('[data-step-next]').forEach((button) =>
+			button.addEventListener('click', () => {
+				if (stepIsValid()) show(current + 1);
+			}),
+		);
+		form.querySelectorAll('[data-step-back]').forEach((button) => button.addEventListener('click', () => show(current - 1)));
+
+		function rows(): [string, string][] {
+			const data = new FormData(form!);
+			const chosen = selectedPackage();
+			return [
+				[label.labelTemplate ?? '', String(data.get('template') || label.templateNone)],
+				[label.labelPackage ?? '', chosen?.dataset.name ?? ''],
+				[label.labelPrice ?? '', chosen?.dataset.price ?? ''],
+				[label.labelName ?? '', String(data.get('name'))],
+				[label.labelBusiness ?? '', String(data.get('business'))],
+				[label.labelDomain ?? '', `${domainName(String(data.get('domain')))}${data.get('extension') ?? ''}`],
+				[label.labelEmail ?? '', String(data.get('email'))],
+				[label.labelWhatsapp ?? '', String(data.get('whatsapp'))],
+				[label.labelNotes ?? '', String(data.get('notes'))],
+			];
+		}
+
+		function renderSummary() {
+			summary?.replaceChildren(
+				...rows().flatMap(([term, value]) => {
+					const dt = document.createElement('dt');
+					const dd = document.createElement('dd');
+					dt.textContent = term;
+					dd.textContent = value.trim() || '-';
+					return [dt, dd];
+				}),
+			);
+		}
+
+		// Domain extensions depend on the package (e.g. .my.id for landing pages, .com for company profiles).
+		function renderDomains() {
+			const domains = JSON.parse(selectedPackage()?.dataset.domains ?? '[]') as string[];
+			domainOptions?.replaceChildren(
+				...domains.map((extension, index) => {
+					const option = document.createElement('label');
+					const radio = document.createElement('input');
+					Object.assign(radio, { type: 'radio', name: 'extension', value: extension, checked: index === 0, required: true });
+					radio.addEventListener('change', () => {
+						if (suffix) suffix.textContent = extension;
+						renderSummary();
+					});
+					option.append(radio, extension);
+					return option;
+				}),
+			);
+			if (suffix) suffix.textContent = domains[0] ?? '';
+			renderSummary();
+		}
+
+		form.querySelectorAll<HTMLInputElement>('input[name="package"]').forEach((radio) => radio.addEventListener('change', renderDomains));
+
+		const params = new URLSearchParams(window.location.search);
+		const requested = form.querySelector<HTMLInputElement>(`input[name="package"][value="${CSS.escape(params.get('package') ?? '')}"]`);
+		if (requested) requested.checked = true;
+		renderDomains();
+
+		// Template chosen in the catalog: /order/?template=0001.
+		async function loadTemplate(code: string) {
+			const message = form!.querySelector<HTMLElement>('[data-template-message]');
+			const preview = form!.querySelector<HTMLElement>('[data-template-preview]');
+			const emptyText = message?.textContent ?? '';
+			if (message) message.textContent = label.templateLoading ?? '';
+			const entries = (await fetch(label.indexUrl ?? '').then((response) => response.json())) as Entry[];
+			const entry = entries.find((item) => item.code === code);
+			if (!entry || !preview || !message) {
+				if (message) message.textContent = emptyText;
+				return;
+			}
+			const categories = JSON.parse(label.categories ?? '{}') as Record<string, string>;
+			const image = preview.querySelector<HTMLImageElement>('[data-template-image]');
+			if (image && entry.thumbnail) image.src = `/images/templates/${entry.code}.webp`;
+			else image?.remove();
+			preview.querySelector('[data-template-name]')!.textContent = `#${entry.code} ${entry.name}`;
+			preview.querySelector('[data-template-category]')!.textContent = categories[entry.category] ?? '';
+			preview.querySelector('[data-template-meta]')!.textContent = `${entry.type} · ${entry.pages} ${label.pagesLabel}`;
+			preview.hidden = false;
+			message.hidden = true;
+			if (templateInput) templateInput.value = `#${entry.code} ${entry.name}`;
+			const browse = form!.querySelector<HTMLElement>('[data-template-browse]');
+			if (browse) browse.textContent = label.templateChange ?? '';
+		}
+		const code = params.get('template') ?? '';
+		if (/^\d{4}$/.test(code)) void loadTemplate(code);
+
+		form.addEventListener('submit', (event) => {
+			event.preventDefault();
+			if (!stepIsValid()) return;
+			openWhatsApp(orderMessage(label.greeting ?? '', rows()));
+			const status = form.querySelector<HTMLElement>('[data-order-status]');
+			if (status) status.textContent = label.sent ?? '';
+		});
+	}
+</script>
+
+<style>
+	/* The site header is fixed, so the page starts below it. */
+	.order-page {
+		padding: calc(var(--header-height) + clamp(2.5rem, 5vw, 4rem)) 0 clamp(4rem, 7vw, 6rem);
+		background: var(--background);
+	}
+
+	.order-container {
+		max-width: 1320px;
+		margin: auto;
+		padding-inline: clamp(1.25rem, 4vw, 2rem);
+	}
+
+	.order-layout {
+		display: grid;
+		grid-template-columns: minmax(0, 1.6fr) minmax(0, 0.9fr);
+		align-items: start;
+		gap: clamp(1.5rem, 3vw, 2.5rem);
+	}
+
+	.order-card,
+	.order-aside {
+		padding: clamp(1.5rem, 3vw, 2.5rem);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.order-steps {
+		margin: 0 0 2rem;
+		padding: 0 0 1.5rem;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.75rem;
+		list-style: none;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.order-steps li {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		color: var(--muted);
+		font-size: 0.85rem;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+
+	.order-steps span {
+		width: 32px;
+		height: 32px;
+		flex: 0 0 32px;
+		display: grid;
+		place-items: center;
+		color: var(--muted);
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.order-steps .is-current {
+		color: var(--foreground);
+	}
+
+	.order-steps .is-current span,
+	.order-steps .is-done span {
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border-color: var(--primary);
+	}
+
+	.step-count {
+		margin: 0;
+		color: var(--primary);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.order-step h2 {
+		margin: 0.4rem 0 0;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(1.5rem, 2.4vw, 2rem);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		outline: none;
+	}
+
+	.step-note {
+		margin: 0.6rem 0 1.5rem;
+		color: var(--muted);
+		font-size: 0.9rem;
+		line-height: 1.6;
+	}
+
+	.chosen-template {
+		margin: 1.25rem 0 0;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: 1.25rem;
+		padding: 1rem;
+		background: var(--background);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.chosen-template[hidden] {
+		display: none;
+	}
+
+	.chosen-template img {
+		width: 100%;
+		height: auto;
+		display: block;
+		border-radius: 10px;
+	}
+
+	.chosen-template figcaption {
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.chosen-category {
+		color: var(--primary);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.chosen-template strong {
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: 1.3rem;
+	}
+
+	.chosen-meta {
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+
+	.step-actions {
+		margin-top: 1.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	.step-primary,
+	.step-secondary {
+		min-height: 48px;
+		padding: 0.75rem 1.4rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6rem;
+		border-radius: var(--radius);
+		cursor: pointer;
+		font: inherit;
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.step-primary {
+		margin-left: auto;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border: 1px solid var(--primary);
+		box-shadow: var(--brand-shadow);
+	}
+
+	.step-primary:hover {
+		background: var(--blue-hover);
+	}
+
+	.step-secondary {
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+	}
+
+	.step-secondary:hover {
+		border-color: rgba(255, 81, 0, 0.45);
+	}
+
+	.step-primary:focus-visible,
+	.step-secondary:focus-visible,
+	.order-help a:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+
+	.order-group {
+		margin: 1.25rem 0 0;
+		padding: 0;
+		border: 0;
+	}
+
+	.order-group legend {
+		padding: 0;
+		color: var(--foreground);
+		font-size: 0.95rem;
+		font-weight: 700;
+	}
+
+	.order-group .step-note {
+		margin-bottom: 1rem;
+	}
+
+	.package-options {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+	}
+
+	.package-option {
+		position: relative;
+		padding: 1rem 1rem 1rem 2.75rem;
+		display: grid;
+		gap: 0.3rem;
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		cursor: pointer;
+	}
+
+	.package-option:has(input:checked) {
+		background: var(--secondary);
+		border-color: var(--primary);
+		box-shadow: 0 0 0 1px var(--primary);
+	}
+
+	.package-option input {
+		position: absolute;
+		top: 1.15rem;
+		left: 1rem;
+		margin: 0;
+		accent-color: var(--primary);
+	}
+
+	.package-option-head {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.75rem;
+		color: var(--foreground);
+		font-size: 0.95rem;
+	}
+
+	.package-option-head span {
+		color: var(--primary);
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.package-option-tagline {
+		color: var(--muted);
+		font-size: 0.8rem;
+		line-height: 1.5;
+	}
+
+	.package-option-meta {
+		color: var(--foreground);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.domain-options {
+		margin-top: 0.75rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	/* Options are created by the script, so they need :global to get styles. */
+	.domain-options :global(label) {
+		min-height: 40px;
+		padding: 0.45rem 0.9rem;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+
+	.domain-options :global(label:has(input:checked)) {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 1px var(--primary);
+	}
+
+	.domain-options :global(input) {
+		margin: 0;
+		accent-color: var(--primary);
+	}
+
+	.order-summary {
+		margin: 1.75rem 0 1.25rem;
+		padding: 1.25rem;
+		background: var(--background);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.order-summary h3 {
+		margin: 0 0 0.9rem;
+		color: var(--foreground);
+		font-size: 0.95rem;
+	}
+
+	.order-summary dl {
+		margin: 0;
+		display: grid;
+		grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+		gap: 0.55rem 1rem;
+		font-size: 0.85rem;
+	}
+
+	.order-summary :global(dt) {
+		color: var(--muted);
+	}
+
+	.order-summary :global(dd) {
+		margin: 0;
+		color: var(--foreground);
+		font-weight: 600;
+		overflow-wrap: anywhere;
+	}
+
+	.order-status {
+		min-height: 1rem;
+		margin: 0.85rem 0 0;
+		color: var(--muted);
+		font-size: 0.85rem;
+	}
+
+	.order-aside {
+		position: sticky;
+		top: calc(var(--header-height) + 1.5rem);
+	}
+
+	.order-aside h2 {
+		margin: 0;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: 1.25rem;
+		font-weight: 600;
+	}
+
+	.order-aside > p {
+		margin: 0.6rem 0 1.25rem;
+		color: var(--muted);
+		font-size: 0.88rem;
+		line-height: 1.6;
+	}
+
+	.after-steps {
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 1rem;
+		list-style: none;
+	}
+
+	.after-steps li {
+		display: grid;
+		grid-template-columns: 32px minmax(0, 1fr);
+		gap: 0.85rem;
+	}
+
+	.after-steps li > span {
+		width: 32px;
+		height: 32px;
+		display: grid;
+		place-items: center;
+		color: var(--primary);
+		background: var(--secondary);
+		border-radius: 50%;
+		font-size: 0.8rem;
+		font-weight: 700;
+	}
+
+	.after-steps strong {
+		color: var(--foreground);
+		font-size: 0.92rem;
+	}
+
+	.after-steps p {
+		margin: 0.25rem 0 0;
+		color: var(--muted);
+		font-size: 0.82rem;
+		line-height: 1.55;
+	}
+
+	.after-steps small {
+		margin-top: 0.3rem;
+		display: block;
+		color: var(--primary);
+		font-size: 0.75rem;
+		font-weight: 700;
+	}
+
+	.order-help {
+		margin-top: 1.5rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.order-help p {
+		margin: 0 0 0.6rem;
+		color: var(--foreground);
+		font-size: 0.88rem;
+		font-weight: 600;
+	}
+
+	.order-help a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		color: var(--primary);
+		font-size: 0.88rem;
+		font-weight: 700;
+		text-decoration: none;
+	}
+
+	.order-help i {
+		color: #25d366;
+		font-size: 1.1rem;
+	}
+
+	@media (max-width: 1000px) {
+		.order-layout {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.order-aside {
+			position: static;
+		}
+	}
+
+	@media (max-width: 560px) {
+		/* Only the current step label is shown on phones; the others shrink to their numbers. */
+		.order-steps {
+			display: flex;
+		}
+
+		.order-steps li:not(.is-current) {
+			font-size: 0;
+		}
+
+		.chosen-template,
+		.package-options,
+		.order-summary dl {
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.order-summary :global(dd) {
+			margin-bottom: 0.35rem;
+		}
+
+		.step-actions {
+			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+
+		.step-primary {
+			margin-left: 0;
+		}
+	}
+</style>

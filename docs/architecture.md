@@ -33,6 +33,7 @@ src/
 ├── scripts/                      Modul TypeScript yang dipakai oleh <script> komponen
 │   ├── motion.ts                 prefersReducedMotion(), onScrollFrame()
 │   ├── scroll-reveal.ts          initScrollReveal(): animasi muncul saat di-scroll
+│   ├── template-search.ts        initTemplateSearch(): pencarian di seluruh katalog dari /templates/search.json
 │   ├── carousel.ts               initCarousel(): carousel hero (10 detik per slide, panah, titik, swipe, keyboard, jeda)
 │   ├── whatsapp.ts               whatsappUrl() / openWhatsApp(): tautan dan pembuka chat WhatsApp bisnis dengan pesan siap kirim
 ├── components/
@@ -41,6 +42,7 @@ src/
 │   │   ├── SiteFooter.astro
 │   │   └── WhatsAppFloat.astro   Tombol konsultasi melayang (dipasang di Layout)
 │   ├── ui/                       Komponen generik tanpa pengetahuan domain
+│   │   ├── CtaBanner.astro       Banner ajakan gelap (home #contact dan akhir katalog)
 │   │   ├── SectionIntro.astro    Judul section "judul <em>penekanan</em>" + deskripsi; layout `center` atau `split`
 │   │   ├── FilterChips.astro     Deretan filter pill (mode link atau tombol)
 │   │   └── Pagination.astro      Navigasi halaman bernomor
@@ -55,6 +57,7 @@ src/
 │   │   ├── FaqSection.astro
 │   │   ├── ContactSection.astro  Banner ajakan penutup (#contact): ke #packages atau konsultasi WhatsApp
 │   │   └── TestimonialsPanel.astro   Section testimoni, disembunyikan lewat `showTestimonials`
+│   ├── order/                    Halaman pemesanan /order/: OrderPage, OrderFields dan OrderConsent (dipakai juga oleh PackageModal)
 │   └── templates/                Domain katalog template
 │       ├── TemplateCard.astro
 │       └── TemplateCatalogPage.astro
@@ -73,7 +76,7 @@ src/
 
 - **`pages/` tipis.** Setiap file rute hanya memanggil komponen halaman (`HomePage`, `TemplateCatalogPage`) dengan `locale` dan parameter. Versi ID dan EN memakai komponen yang sama.
 - **Satu komponen, satu tanggung jawab.** Markup, gaya (`<style>` scoped), dan perilaku (`<script>`) sebuah bagian berada di file yang sama.
-- **Logika yang dipakai lebih dari satu komponen** dipindah ke `src/scripts/`. Contohnya, `whatsappUrl` dipakai oleh `TemplateCard`, `ContactSection` dan (lewat `openWhatsApp`) `PackageModal`.
+- **Logika yang dipakai lebih dari satu komponen** dipindah ke `src/scripts/`. Contohnya, `whatsappUrl` dipakai oleh `CtaBanner` dan `OrderPage`, sedangkan `orderMessage()`/`domainName()` di `order.ts` dipakai oleh `PackageModal` dan `OrderPage`.
 - **Komponen saling berkomunikasi lewat atribut data**, bukan lewat variabel global. Contoh: tombol `[data-package-select]` di `PricingSection` membawa data paket, lalu `PackageModal` membacanya.
 - **Konstanta** (email, logo, URL preview) hanya ada di `src/config/site.ts`.
 
@@ -87,6 +90,8 @@ src/
 | `/templates/<category>/` | `pages/templates/[category].astro` | `TemplateCatalogPage` |
 | `/templates/<category>/page/<n>/` | `pages/templates/[category]/page/[page].astro` | `TemplateCatalogPage` |
 | `/en/templates/...` | `pages/en/templates/...` | Struktur sama untuk EN |
+| `/order/`, `/en/order/` | `pages/order.astro`, `pages/en/order.astro` | `OrderPage` |
+| `/templates/search.json` | `pages/templates/search.json.ts` | Indeks pencarian katalog (`templateSearchIndex()`), dipakai ID dan EN |
 
 Daftar halaman katalog dibuat oleh `getStaticPaths()` dari data, jadi menambah template atau kategori otomatis menambah halaman.
 
@@ -111,12 +116,12 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
                 ▼                                             ▼
    TemplatesSection (home)                     TemplateCatalogPage (/templates/...)
    6 template per tab, FilterChips mode tombol FilterChips mode link + Pagination
-   tombol "Lihat semua" → katalog              24 per halaman (CATALOG_PAGE_SIZE)
+   tombol "Lihat semua" → katalog              12 per halaman (CATALOG_PAGE_SIZE)
 ```
 
 ## Alur pemesanan / konsultasi
 
-1. **Template (home dan katalog):** tombol "Pilih template" adalah tautan `wa.me` dengan pesan berisi kode dan nama template, dibuat saat build oleh `whatsappUrl()`.
+1. **Template (home, katalog, hasil pencarian):** tombol "Pilih template" membuka `/order/?template=<kode>` (`orderPath()`). Form pemesanan mengikuti 3 langkah pertama Cara Kerja: Pilih Template → Kirim Data Bisnis → Order & Pembayaran (paket, domain, ringkasan, persetujuan). Ringkasan dikirim lewat `openWhatsApp()`. `?package=<slug>` (misalnya `company-profile`) memilihkan paket. Halaman ini `noindex` dan tidak masuk sitemap.
 2. **Banner `#contact`:** "Buat Website Sekarang" menuju `#packages`; "Konsultasi Gratis" membuka WhatsApp dengan pesan konsultasi. Header, hero, tombol WhatsApp melayang dan CTA katalog mengarah ke banner ini.
 3. **Paket:** tombol di `PricingSection` membawa detail paket sebagai JSON di `data-package` (nama, harga, fasilitas, ekstensi domain, revisi, estimasi). `PackageModal` membacanya, menampilkan ringkasan dan pilihan domain di kiri, lalu form pemesanan di kanan.
 4. **Modal paket** mengirim ringkasan pesanan lewat `openWhatsApp()` ke nomor `site.whatsapp` (lihat [ADR 0010](decisions/0010-package-orders-via-whatsapp.md)). Label ringkasan diambil dari atribut `data-*` pada form.
@@ -143,11 +148,11 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
 | `showPartners` | `src/components/home/HomePage.astro` | Section "mitra" dan link menu "Mitra". Saat ini `false` karena belum ada logo klien asli |
 | `showTestimonials` | `src/components/home/HomePage.astro` | Section testimoni (setelah Cara Kerja). Saat ini `false` karena belum ada klien; isi `testimonials` di `content.ts` masih contoh. Saat dinyalakan, samakan dulu headingnya dengan `SectionIntro layout="split"` |
 | `previewSize` | `src/components/home/TemplatesSection.astro` | Jumlah template per tab di home (6) |
-| `CATALOG_PAGE_SIZE` | `src/data/templates.ts` | Jumlah template per halaman katalog (24) |
+| `CATALOG_PAGE_SIZE` | `src/data/templates.ts` | Jumlah template per halaman katalog (12) |
 
 ## Utang teknis yang diketahui
 
-- `site.whatsapp` dan URL di `site.social` masih placeholder dan harus diganti dengan nomor dan profil asli sebelum deploy.
+- URL di `site.social` masih placeholder dan harus diganti dengan profil asli.
 - Script pembuat `templates.json` dan thumbnail belum ada di repo (lihat [template-catalog.md](template-catalog.md)).
 - Belum ada tes otomatis. Regresi tampilan masih diperiksa manual dengan perbandingan screenshot (lihat [development.md](development.md)).
 

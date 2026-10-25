@@ -11,9 +11,13 @@ interface Props {
 	description?: string;
 	eyebrow?: string;
 	layout?: 'center' | 'split';
+	/** Heading level: h2 inside a page, h1 when the intro is the page's own title. */
+	level?: 'h1' | 'h2';
 }
 
-const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.props;
+const { id, title, emphasis, description, eyebrow, layout = 'center', level = 'h2' } = Astro.props;
+const Heading = level;
+// Astro drops the plain space between text and <em> inside a dynamic tag, so the title carries its own trailing space.
 ---
 
 {layout === 'split' ? (
@@ -25,18 +29,20 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 			</p>
 		)}
 		<div class="split-grid">
-			<h2 id={id}>
-				{title} <em>{emphasis}</em>
-			</h2>
+			<Heading class="intro-title" id={id}>
+				{`${title} `}
+				<em>{emphasis}</em>
+			</Heading>
 			{description && <p class="split-description">{description}</p>}
 		</div>
 	</header>
 ) : (
 	<div class="section-intro">
 		{eyebrow && <p class="eyebrow">{eyebrow}</p>}
-		<h2 id={id}>
-			{title} <em>{emphasis}</em>
-		</h2>
+		<Heading class="intro-title" id={id}>
+			{`${title} `}
+			<em>{emphasis}</em>
+		</Heading>
 		{description && <p>{description}</p>}
 	</div>
 )}
@@ -58,7 +64,7 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 		text-transform: uppercase;
 	}
 
-	h2 {
+	.intro-title {
 		margin: 0;
 		color: var(--ink);
 		font-family: var(--font-display);
@@ -68,7 +74,7 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 		line-height: 1;
 	}
 
-	h2 em {
+	.intro-title em {
 		color: var(--blue-deep);
 	}
 
@@ -110,13 +116,13 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 		gap: clamp(3rem, 7vw, 7rem);
 	}
 
-	.section-intro--split h2 {
+	.section-intro--split .intro-title {
 		color: var(--foreground);
 		font-size: clamp(2.5rem, 3.8vw, 3.65rem);
 		font-weight: 500;
 	}
 
-	.section-intro--split h2 em {
+	.section-intro--split .intro-title em {
 		color: var(--primary);
 	}
 
@@ -128,7 +134,7 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 	}
 
 	@media (max-width: 1000px) {
-		.section-intro--split h2 {
+		.section-intro--split .intro-title {
 			font-size: clamp(2.15rem, 4.6vw, 2.85rem);
 		}
 	}
@@ -139,7 +145,7 @@ const { id, title, emphasis, description, eyebrow, layout = 'center' } = Astro.p
 			gap: 1.25rem;
 		}
 
-		.section-intro--split h2 {
+		.section-intro--split .intro-title {
 			font-size: clamp(1.65rem, 7.4vw, 2.2rem);
 		}
 	}

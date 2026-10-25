@@ -5,6 +5,7 @@ import SiteFooter from '../layout/SiteFooter.astro';
 import FilterChips from '../ui/FilterChips.astro';
 import Pagination from '../ui/Pagination.astro';
 import TemplateCard from './TemplateCard.astro';
+import CtaBanner from '../ui/CtaBanner.astro';
 import { content, type Locale } from '../../i18n/content';
 import { site } from '../../config/site';
 import {
@@ -13,8 +14,11 @@ import {
 	catalogPageCount,
 	catalogPath,
 	homePath,
+	orderPath,
 	roundedTemplateCount,
 	templateCategories,
+	templates,
+	templatesIn,
 	type TemplateCategory,
 } from '../../data/templates';
 
@@ -39,6 +43,11 @@ const metaDescription = (categoryLabel ? c.metaDescriptionCategory : c.metaDescr
 	.replace('{count}', String(roundedTemplateCount()))
 	.replace('{price}', t.packages[0].price);
 const alternates = { id: catalogPath('id', category, page), en: catalogPath('en', category, page) };
+const intro = t.templatesIntro;
+const count = templatesIn(category).length;
+const status = categoryLabel
+	? c.statusCategory.replace('{count}', String(count)).replace('{category}', categoryLabel)
+	: c.statusAll.replace('{count}', String(count));
 const filters = [
 	{ href: catalogPath(locale), label: t.templatesIntro.all, active: !category },
 	...templateCategories.map((key) => ({ href: catalogPath(locale, key), label: t.templateCategories[key], active: key === category })),
@@ -49,67 +58,142 @@ const filters = [
 	<SiteHeader locale={locale} alternates={alternates} />
 
 	<main class="catalog" id="top">
-		<nav class="breadcrumb" aria-label={c.breadcrumb}>
-			<a href={home}>{c.home}</a>
-			<span aria-hidden="true">/</span>
-			{category ? (
-				<>
-					<a href={catalogPath(locale)}>{catalogTitle}</a>
+		<header class="catalog-hero">
+			<div class="catalog-container">
+				<nav class="breadcrumb" aria-label={c.breadcrumb}>
+					<a href={home}>{c.home}</a>
 					<span aria-hidden="true">/</span>
-					<span aria-current="page">{categoryLabel}</span>
-				</>
-			) : (
-				<span aria-current="page">{catalogTitle}</span>
-			)}
-		</nav>
+					{category ? (
+						<>
+							<a href={catalogPath(locale)}>{catalogTitle}</a>
+							<span aria-hidden="true">/</span>
+							<span aria-current="page">{categoryLabel}</span>
+						</>
+					) : (
+						<span aria-current="page">{catalogTitle}</span>
+					)}
+				</nav>
+				<p class="catalog-eyebrow">
+					<span class="catalog-eyebrow-icon" aria-hidden="true">
+						<svg viewBox="0 0 16 16">
+							<rect x="2" y="2" width="5" height="5" rx="1.2"></rect>
+							<rect x="9" y="2" width="5" height="5" rx="1.2"></rect>
+							<rect x="2" y="9" width="5" height="5" rx="1.2"></rect>
+							<rect x="9" y="9" width="5" height="5" rx="1.2"></rect>
+						</svg>
+					</span>
+					{intro.eyebrow}
+				</p>
+				<div class="catalog-hero-grid">
+					<div>
+						<h1>
+							{category ? c.categoryTitle : intro.title} <em>{category ? categoryLabel : intro.emphasis}</em>
+						</h1>
+						<p class="catalog-description">{c.description.replace('{count}', String(roundedTemplateCount()))}</p>
+					</div>
+					<aside class="catalog-note">
+						<span>{c.noteLabel}</span>
+						<p>{c.note}</p>
+					</aside>
+				</div>
+			</div>
+		</header>
 
-		<div class="catalog-intro">
-			{category ? (
-				<h1>
-					<em>{categoryLabel}</em>
-				</h1>
-			) : (
-				<h1>
-					{c.title} <em>{c.emphasis}</em>
-				</h1>
-			)}
-			<p>{c.description}</p>
+		<div class="catalog-container catalog-body">
+			<form
+				class="catalog-toolbar"
+				role="search"
+				data-template-search
+				data-index-url="/templates/search.json"
+				data-categories={JSON.stringify(t.templateCategories)}
+				data-order-path={orderPath(locale)}
+				data-pages-label={intro.pages}
+				data-thumb-alt={intro.thumbAlt}
+				data-preview-label={intro.livePreviewLabel}
+				data-status-results={c.statusResults}
+				data-status-empty={c.statusEmpty}
+			>
+				<p class="catalog-status" data-search-status aria-live="polite">
+					{status}
+				</p>
+				<label class="catalog-search">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<circle cx="11" cy="11" r="7"></circle>
+						<path d="m20 20-3.5-3.5"></path>
+					</svg>
+					<input type="search" name="q" placeholder={c.search} aria-label={c.searchLabel} autocomplete="off" />
+				</label>
+			</form>
+
+			{/* Pagination links jump back to #catalog-list. */}
+			<FilterChips mode="link" variant="tabs" id="catalog-list" label={intro.filterLabel} items={filters} />
+
+			<div data-catalog-list>
+				<div class="catalog-grid">
+					{items.map((item) => (
+						<TemplateCard item={item} locale={locale} />
+					))}
+				</div>
+
+				<Pagination
+					current={page}
+					total={totalPages}
+					hrefFor={(n: number) => `${catalogPath(locale, category, n)}#catalog-list`}
+					labels={{ nav: c.pagination, previous: c.previous, next: c.next, pageOf: c.pageOf }}
+				/>
+			</div>
+
+			{/* Filled by the search script; the template below is the card it copies. */}
+			<div class="catalog-grid" data-search-results hidden></div>
+			<template data-card-template>
+				<TemplateCard item={templates[0]} locale={locale} />
+			</template>
+
+			<section class="catalog-cta" aria-labelledby="catalog-cta-title">
+				<CtaBanner
+					id="catalog-cta-title"
+					eyebrow={c.ctaEyebrow}
+					title={c.ctaTitle}
+					emphasis={c.ctaEmphasis}
+					titleEnd={c.ctaTitleEnd}
+					description={c.ctaText}
+					primary={{ label: c.ctaPrimary, href: `${home}#packages` }}
+					whatsapp={{ label: c.ctaSecondary, message: c.ctaMessage.replace('{site}', site.name) }}
+					highlights={t.contact.highlights.map((item) => item.replace('{price}', t.packages[0].price))}
+				/>
+			</section>
 		</div>
-
-		{/* Pagination links jump back to #catalog-list. */}
-		<FilterChips mode="link" id="catalog-list" label={t.templatesIntro.filterLabel} items={filters} />
-
-		<div class="catalog-grid">
-			{items.map((item) => (
-				<TemplateCard item={item} locale={locale} />
-			))}
-		</div>
-
-		<Pagination
-			current={page}
-			total={totalPages}
-			hrefFor={(n: number) => `${catalogPath(locale, category, n)}#catalog-list`}
-			labels={{ nav: c.pagination, previous: c.previous, next: c.next, pageOf: c.pageOf }}
-		/>
-
-		<section class="catalog-cta" aria-labelledby="catalog-cta-title">
-			<h2 id="catalog-cta-title">{c.ctaTitle}</h2>
-			<p>{c.ctaText}</p>
-			<a href={`${home}#contact`}>
-				{c.ctaButton} <span aria-hidden="true">↗</span>
-			</a>
-		</section>
 	</main>
 
 	<SiteFooter locale={locale} home={home} />
 </Layout>
 
+<script>
+	import { initTemplateSearch } from '../../scripts/template-search';
+
+	const search = document.querySelector<HTMLElement>('[data-template-search]');
+	if (search) initTemplateSearch(search);
+
+	// On narrow screens the tabs scroll sideways; bring the active category into view (without scrolling the page).
+	const tabs = document.querySelector<HTMLElement>('#catalog-list');
+	const activeTab = tabs?.querySelector<HTMLElement>('[aria-current]');
+	if (tabs && activeTab) tabs.scrollLeft += activeTab.getBoundingClientRect().left - tabs.getBoundingClientRect().left - 16;
+</script>
+
 <style>
-	.catalog {
+	.catalog-container {
 		max-width: 1320px;
 		margin: auto;
-		/* The site header is fixed, so start the content below it. */
-		padding: calc(var(--header-height) + 2.2rem) clamp(1.25rem, 4vw, 2rem) 5rem;
+		padding-inline: clamp(1.25rem, 4vw, 2rem);
+	}
+
+	/* The site header is fixed, so the hero starts below it. */
+	.catalog-hero {
+		padding: calc(var(--header-height) + 2rem) 0 clamp(2.5rem, 5vw, 4rem);
+		background:
+			radial-gradient(rgba(15, 23, 42, 0.08) 1px, transparent 1.5px) 0 0 / 22px 22px,
+			var(--background);
+		border-bottom: 1px solid var(--border);
 	}
 
 	.breadcrumb {
@@ -117,8 +201,8 @@ const filters = [
 		flex-wrap: wrap;
 		gap: 0.5rem;
 		color: var(--muted);
-		font-size: 0.66rem;
-		letter-spacing: 0.06em;
+		font-size: 0.72rem;
+		letter-spacing: 0.04em;
 	}
 
 	.breadcrumb a {
@@ -134,83 +218,167 @@ const filters = [
 		color: var(--ink);
 	}
 
-	.catalog-intro {
-		max-width: 720px;
-		margin: 3rem auto 2.4rem;
-		text-align: center;
+	.catalog-eyebrow {
+		width: fit-content;
+		margin: 1.75rem 0 1.4rem;
+		padding: 0.4rem 1rem 0.4rem 0.4rem;
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		color: var(--foreground);
+		background: var(--secondary);
+		border: 1px solid rgba(255, 81, 0, 0.22);
+		border-radius: 999px;
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
 	}
 
-	.catalog-intro h1 {
+	.catalog-eyebrow-icon {
+		width: 28px;
+		height: 28px;
+		display: grid;
+		place-items: center;
+		background: var(--primary);
+		border-radius: 50%;
+	}
+
+	.catalog-eyebrow-icon svg {
+		width: 14px;
+		height: 14px;
+		fill: none;
+		stroke: var(--primary-foreground);
+		stroke-width: 1.6;
+	}
+
+	.catalog-hero-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+		align-items: end;
+		gap: clamp(2rem, 6vw, 6rem);
+	}
+
+	.catalog-hero h1 {
 		margin: 0;
-		color: var(--ink);
-		font-family: var(--font-serif);
-		font-size: clamp(2.2rem, 5vw, 3.6rem);
-		font-weight: 400;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(2.3rem, 5vw, 4.2rem);
+		font-weight: 700;
 		letter-spacing: -0.04em;
-		line-height: 1;
+		line-height: 1.08;
 	}
 
-	.catalog-intro em {
-		color: var(--blue);
+	/* Highlighter stroke behind the emphasised words, as in the home CTA banner. */
+	.catalog-hero h1 em {
+		padding-inline: 0.08em;
+		color: var(--foreground);
+		font-style: italic;
+		font-weight: 500;
+		background: linear-gradient(transparent 58%, rgba(255, 81, 0, 0.3) 58%, rgba(255, 81, 0, 0.3) 90%, transparent 90%);
+		box-decoration-break: clone;
 	}
 
-	.catalog-intro p {
-		margin: 1rem auto 0;
+	.catalog-description {
+		max-width: 760px;
+		margin: 1.4rem 0 0;
 		color: var(--muted);
-		font-size: 0.85rem;
+		font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+		line-height: 1.7;
+	}
+
+	.catalog-note {
+		padding-bottom: 0.3rem;
+		text-align: right;
+	}
+
+	.catalog-note span {
+		color: var(--muted);
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+	}
+
+	.catalog-note p {
+		margin: 0.6rem 0 0;
+		color: var(--foreground);
+		font-size: 0.9rem;
+		font-style: italic;
 		line-height: 1.6;
+	}
+
+	.catalog-body {
+		padding-top: clamp(2rem, 4vw, 3rem);
+		padding-bottom: 5rem;
+	}
+
+	.catalog-toolbar {
+		margin-bottom: 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem 2rem;
+	}
+
+	.catalog-status {
+		margin: 0;
+		color: var(--muted);
+		font-size: 0.92rem;
+		font-style: italic;
+	}
+
+	.catalog-search {
+		width: min(100%, 440px);
+		position: relative;
+		display: block;
+	}
+
+	.catalog-search svg {
+		width: 18px;
+		height: 18px;
+		position: absolute;
+		top: 50%;
+		left: 1rem;
+		fill: none;
+		stroke: var(--muted);
+		stroke-width: 1.8;
+		transform: translateY(-50%);
+		pointer-events: none;
+	}
+
+	.catalog-search input {
+		width: 100%;
+		min-height: 48px;
+		padding: 0 1rem 0 2.75rem;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+		outline: none;
+		font: inherit;
+		font-size: 0.92rem;
+	}
+
+	.catalog-search input:focus {
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px rgba(255, 81, 0, 0.14);
 	}
 
 	.catalog-grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 1.3rem;
 	}
 
+	.catalog-grid[hidden] {
+		display: none;
+	}
+
 	.catalog-cta {
-		margin-top: 4rem;
-		padding: clamp(2rem, 5vw, 3.2rem);
-		color: var(--foreground);
-		background: linear-gradient(135deg, #fff3ea, #ffe2cf);
-		border: 1px solid rgba(255, 81, 0, 0.24);
-		border-radius: var(--radius);
-		text-align: center;
+		margin-top: clamp(3rem, 6vw, 5rem);
 	}
 
-	.catalog-cta h2 {
-		margin: 0;
-		font-family: var(--font-serif);
-		font-size: clamp(1.6rem, 3vw, 2.2rem);
-		font-weight: 400;
-	}
-
-	.catalog-cta p {
-		max-width: 520px;
-		margin: 0.8rem auto 1.6rem;
-		color: var(--muted);
-		font-size: 0.8rem;
-		line-height: 1.6;
-	}
-
-	.catalog-cta a {
-		padding: 0.95rem 1.4rem;
-		display: inline-flex;
-		gap: 1rem;
-		color: var(--ink);
-		background: #fff;
-		border-radius: var(--radius);
-		box-shadow: var(--brand-shadow);
-		font-size: 0.66rem;
-		letter-spacing: 0.08em;
-		text-decoration: none;
-		text-transform: uppercase;
-	}
-
-	.catalog-cta a:hover {
-		background: var(--blue-soft);
-	}
-
-	.catalog-cta a:focus-visible,
 	.breadcrumb a:focus-visible {
 		outline: 3px solid var(--blue-soft);
 		outline-offset: 2px;
@@ -218,16 +386,33 @@ const filters = [
 
 	@media (max-width: 1000px) {
 		.catalog-grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 800px) {
+		.catalog-hero-grid {
+			grid-template-columns: minmax(0, 1fr);
+			gap: 1.5rem;
+		}
+		.catalog-note {
+			text-align: left;
+		}
+		.catalog-toolbar {
+			flex-direction: column-reverse;
+			align-items: stretch;
+		}
+		.catalog-search {
+			width: 100%;
 		}
 	}
 
 	@media (max-width: 560px) {
 		.catalog-grid {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
-		.catalog-intro {
-			margin-top: 2rem;
+		.catalog-eyebrow {
+			letter-spacing: 0.1em;
 		}
 	}
 </style>

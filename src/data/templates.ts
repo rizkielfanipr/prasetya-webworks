@@ -20,10 +20,10 @@ export const templateCategories = (Object.keys(content.id.templateCategories) as
 
 export const templatesIn = (category?: TemplateCategory) => (category ? templates.filter((item) => item.category === category) : templates);
 
-/** Round-robin across categories so an unfiltered list opens with a varied mix. */
 /** Catalog size rounded down to the hundred, for "200+ templates" claims that stay true as the catalog grows. */
 export const roundedTemplateCount = () => Math.floor(templates.length / 100) * 100;
 
+/** Round-robin across categories so an unfiltered list opens with a varied mix. */
 export const interleaveByCategory = (items: TemplateItem[]) => {
 	const groups = templateCategories.map((key) => items.filter((item) => item.category === key));
 	return Array.from({ length: Math.max(0, ...groups.map((group) => group.length)) }, (_, round) => groups.map((group) => group[round]))
@@ -37,7 +37,22 @@ export const homePath = (locale: Locale) => (locale === 'id' ? '/' : '/en/');
 export const catalogPath = (locale: Locale, category?: TemplateCategory, page = 1) =>
 	`${locale === 'id' ? '' : '/en'}/templates/${category ? `${category}/` : ''}${page > 1 ? `page/${page}/` : ''}`;
 
-export const CATALOG_PAGE_SIZE = 24;
+/** Order form, optionally with a template already chosen. */
+export const orderPath = (locale: Locale, code?: string) => `${locale === 'id' ? '' : '/en'}/order/${code ? `?template=${code}` : ''}`;
+
+export const CATALOG_PAGE_SIZE = 12;
+
+/** Everything the catalog search needs per template, in catalog order (served as /templates/search.json). */
+export const templateSearchIndex = () =>
+	interleaveByCategory(templates).map((item) => ({
+		code: item.code,
+		name: item.name,
+		category: item.category,
+		type: item.type,
+		pages: item.pages,
+		thumbnail: Boolean(item.thumbnail),
+		preview: livePreviewUrl(item) ?? null,
+	}));
 
 /** Templates in catalog order: the unfiltered list is interleaved across categories. */
 export const catalogItems = (category?: TemplateCategory) => (category ? templatesIn(category) : interleaveByCategory(templates));
