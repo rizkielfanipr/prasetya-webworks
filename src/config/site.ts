@@ -18,6 +18,8 @@ export const site = {
 		{ network: 'Facebook', icon: 'fa-facebook-f', url: 'https://www.facebook.com/' },
 		{ network: 'LinkedIn', icon: 'fa-linkedin-in', url: 'https://www.linkedin.com/' },
 	],
+	/** Satamu, the digital invitation brand, promoted by the floating button above WhatsApp. */
+	satamu: { url: 'https://satamu.prasetyawebworks.web.id', mark: '/images/satamu-mark.svg' },
 	/** WordPress Multisite that hosts the live template demos (see docs/wordpress-preview.md). */
 	previewBaseUrl: 'https://preview.prasetyawebworks.web.id',
 } as const;

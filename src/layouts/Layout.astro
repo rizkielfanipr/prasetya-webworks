@@ -3,6 +3,7 @@ import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
 import '../styles/global.css';
 import WhatsAppFloat from '../components/layout/WhatsAppFloat.astro';
+import SatamuFloat from '../components/layout/SatamuFloat.astro';
 import { content, type Locale } from '../i18n/content';
 import { homePath } from '../data/templates';
 import { site } from '../config/site';
@@ -67,6 +68,8 @@ const image = absolute(site.ogImage);
 	</head>
 	<body>
 		<slot />
+		{/* Satamu prompt stacked above the WhatsApp button (see SatamuFloat). */}
+		<SatamuFloat locale={lang} />
 		{/* Every page gets the floating consultation button, pointing at the home contact form. */}
 		<WhatsAppFloat href={`${homePath(lang)}#contact`} label={content[lang].nav.consultation} />
 	</body>

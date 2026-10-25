@@ -1,0 +1,237 @@
+---
+/**
+ * Floating Satamu button stacked above WhatsAppFloat (bottom right), with a dismissible speech bubble
+ * that points down at it. Offsets mirror WhatsAppFloat so the two stay centred on one column.
+ */
+import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
+
+interface Props {
+	locale: Locale;
+}
+
+const t = content[Astro.props.locale].satamu;
+---
+
+<div class="satamu-float" data-satamu-float>
+	<div class="satamu-bubble" data-satamu-bubble hidden>
+		<a class="satamu-bubble-link" href={site.satamu.url} target="_blank" rel="noopener">
+			<strong>{t.title}</strong>{' '}
+			<span>
+				{t.text} <b>{t.price}</b>
+			</span>
+		</a>
+		<button class="satamu-close" type="button" aria-label={t.close} data-satamu-close>
+			×
+		</button>
+	</div>
+	<a class="satamu-button" href={site.satamu.url} target="_blank" rel="noopener" aria-label={t.label} title={t.label}>
+		<img src={site.satamu.mark} alt="" width="40" height="40" />
+	</a>
+</div>
+
+<script>
+	import { initSatamuFloat } from '../../scripts/satamu-float';
+
+	const float = document.querySelector<HTMLElement>('[data-satamu-float]');
+	if (float) initSatamuFloat(float);
+</script>
+
+<style>
+	/* WhatsAppFloat is 58px at clamp(1rem, 2.5vw, 2rem) from the corner; this 50px button sits 12px above it, centred. */
+	.satamu-float {
+		position: fixed;
+		z-index: 40;
+		right: calc(clamp(1rem, 2.5vw, 2rem) + 4px);
+		bottom: calc(clamp(1rem, 2.5vw, 2rem) + 70px);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 10px;
+		pointer-events: none;
+	}
+
+	.satamu-float > * {
+		pointer-events: auto;
+	}
+
+	.satamu-button {
+		width: 50px;
+		height: 50px;
+		display: grid;
+		place-items: center;
+		background: #fff7f2;
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		box-shadow: 0 10px 24px rgba(16, 42, 67, 0.22);
+		transition:
+			transform 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.satamu-button img {
+		width: 40px;
+		height: 40px;
+		display: block;
+	}
+
+	.satamu-button:hover {
+		box-shadow: 0 14px 30px rgba(16, 42, 67, 0.3);
+		transform: translateY(-3px) scale(1.04);
+	}
+
+	.satamu-button:focus-visible,
+	.satamu-bubble-link:focus-visible,
+	.satamu-close:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+
+	/* Speech bubble with a tail pointing down at the Satamu button. */
+	.satamu-bubble {
+		position: relative;
+		width: max-content;
+		max-width: calc(100vw - 2rem);
+		padding: 0.65rem 2.1rem 0.7rem 0.95rem;
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: 14px;
+		box-shadow: 0 16px 36px -14px rgba(16, 42, 67, 0.35);
+		animation: satamu-bubble-in 0.45s cubic-bezier(0.2, 0.72, 0.2, 1) backwards;
+		transition:
+			opacity 0.25s ease,
+			transform 0.25s ease;
+	}
+
+	/* Fades out while the footer is on screen so it never covers footer text; the button stays. */
+	.satamu-float[data-near-footer] .satamu-bubble {
+		opacity: 0;
+		pointer-events: none;
+		transform: translate3d(0, 8px, 0);
+	}
+
+	.satamu-bubble[hidden] {
+		display: none;
+	}
+
+	.satamu-bubble::after {
+		content: '';
+		position: absolute;
+		right: 19px;
+		bottom: -7px;
+		width: 12px;
+		height: 12px;
+		background: var(--card);
+		border-right: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
+		transform: rotate(45deg);
+	}
+
+	.satamu-bubble-link {
+		display: grid;
+		gap: 0.15rem;
+		color: var(--foreground);
+		text-decoration: none;
+	}
+
+	.satamu-bubble-link strong {
+		font-size: 0.82rem;
+		line-height: 1.3;
+	}
+
+	.satamu-bubble-link span {
+		color: var(--muted);
+		font-size: 0.74rem;
+		line-height: 1.4;
+	}
+
+	.satamu-bubble-link b {
+		color: #ff6542;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	.satamu-bubble-link:hover strong {
+		color: var(--primary);
+	}
+
+	.satamu-close {
+		position: absolute;
+		top: 0.4rem;
+		right: 0.4rem;
+		width: 24px;
+		height: 24px;
+		display: grid;
+		place-items: center;
+		padding: 0;
+		color: var(--muted);
+		background: transparent;
+		border: 0;
+		border-radius: 50%;
+		cursor: pointer;
+		font-size: 1rem;
+		line-height: 1;
+	}
+
+	.satamu-close:hover {
+		color: var(--foreground);
+		background: var(--muted-surface);
+	}
+
+	@keyframes satamu-bubble-in {
+		from {
+			opacity: 0;
+			transform: translate3d(0, 8px, 0);
+		}
+		to {
+			opacity: 1;
+			transform: translate3d(0, 0, 0);
+		}
+	}
+
+	/* Matches WhatsAppFloat at this width: 54px button at 1rem from the corner. */
+	@media (max-width: 560px) {
+		.satamu-float {
+			right: calc(1rem + 5px);
+			bottom: calc(1rem + 64px);
+			gap: 8px;
+		}
+
+		.satamu-button {
+			width: 44px;
+			height: 44px;
+		}
+
+		.satamu-button img {
+			width: 34px;
+			height: 34px;
+		}
+
+		.satamu-bubble {
+			padding: 0.55rem 1.9rem 0.6rem 0.8rem;
+		}
+
+		.satamu-bubble::after {
+			right: 16px;
+		}
+
+		.satamu-bubble-link strong {
+			font-size: 0.76rem;
+		}
+
+		.satamu-bubble-link span {
+			font-size: 0.7rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.satamu-bubble {
+			animation: none;
+			transition: none;
+		}
+
+		.satamu-button {
+			transition: none;
+		}
+	}
+</style>

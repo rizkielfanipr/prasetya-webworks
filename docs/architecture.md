@@ -35,11 +35,13 @@ src/
 │   ├── scroll-reveal.ts          initScrollReveal(): animasi muncul saat di-scroll
 │   ├── template-search.ts        initTemplateSearch(): pencarian di seluruh katalog dari /templates/search.json
 │   ├── carousel.ts               initCarousel(): carousel hero (10 detik per slide, panah, titik, swipe, keyboard, jeda)
+│   ├── satamu-float.ts           initSatamuFloat(): balon ajakan Satamu (muncul tertunda, bisa ditutup per sesi, hilang saat footer terlihat)
 │   ├── whatsapp.ts               whatsappUrl() / openWhatsApp(): tautan dan pembuka chat WhatsApp bisnis dengan pesan siap kirim
 ├── components/
 │   ├── layout/                   Dipakai semua halaman
 │   │   ├── SiteHeader.astro      Header + navigasi + menu mobile + pemilih bahasa
 │   │   ├── SiteFooter.astro
+│   │   ├── SatamuFloat.astro     Ikon Satamu + balon "Ingin buat undangan digital?" di atas tombol WhatsApp (dipasang di Layout, tautan ke site.satamu.url)
 │   │   └── WhatsAppFloat.astro   Tombol konsultasi melayang (dipasang di Layout)
 │   ├── ui/                       Komponen generik tanpa pengetahuan domain
 │   │   ├── CtaBanner.astro       Banner ajakan gelap (home #contact dan akhir katalog)

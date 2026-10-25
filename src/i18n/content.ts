@@ -417,6 +417,13 @@ export const content = {
 				notes: 'Catatan',
 			},
 		},
+		satamu: {
+			label: 'Satamu, undangan digital dari Prasetya Webworks (buka di tab baru)',
+			title: 'Ingin buat undangan digital?',
+			text: 'Klik di bawah, mulai dari',
+			price: 'Rp49.000',
+			close: 'Tutup ajakan Satamu',
+		},
 		footer: {
 			tagline:
 				'Jasa pembuatan website berbasis template untuk UMKM dan bisnis Indonesia. Harga jelas, proses cepat, siap tampil profesional.',
@@ -840,6 +847,13 @@ export const content = {
 				whatsapp: 'WhatsApp',
 				notes: 'Notes',
 			},
+		},
+		satamu: {
+			label: 'Satamu, digital invitations by Prasetya Webworks (opens in a new tab)',
+			title: 'Need a digital invitation?',
+			text: 'Tap below, starting from',
+			price: 'Rp49,000',
+			close: 'Close the Satamu prompt',
 		},
 		footer: {
 			tagline:
