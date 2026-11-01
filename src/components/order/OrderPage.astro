@@ -5,6 +5,7 @@ import SiteFooter from '../layout/SiteFooter.astro';
 import SectionIntro from '../ui/SectionIntro.astro';
 import OrderFields from './OrderFields.astro';
 import OrderConsent from './OrderConsent.astro';
+import OrderChoiceDialog from './OrderChoiceDialog.astro';
 import { content, type Locale } from '../../i18n/content';
 import { site } from '../../config/site';
 import { catalogPath, homePath, orderPath } from '../../data/templates';
@@ -140,6 +141,7 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 											checked={item.popular}
 											required
 											data-name={item.name}
+											data-code={item.code}
 											data-price={item.price}
 											data-domains={JSON.stringify(item.domains)}
 										/>
@@ -171,7 +173,7 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 								{t.back}
 							</button>
 							<button class="step-primary" type="submit">
-								{f.submit} <span aria-hidden="true">↗</span>
+								{site.platformApiUrl ? f.continue : f.submit} <span aria-hidden="true">↗</span>
 							</button>
 						</div>
 						<p class="order-status" role="status" aria-live="polite" data-order-status></p>
@@ -206,11 +208,13 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 	</main>
 
 	<SiteFooter locale={locale} home={homePath(locale)} />
+	<OrderChoiceDialog locale={locale} />
 </Layout>
 
 <script>
 	import { openWhatsApp } from '../../scripts/whatsapp';
 	import { domainName, orderMessage } from '../../scripts/order';
+	import { hasOrderChoice, openOrderChoice } from '../../scripts/order-choice';
 
 	interface Entry {
 		code: string;
@@ -351,9 +355,31 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 		form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			if (!stepIsValid()) return;
-			openWhatsApp(orderMessage(label.greeting ?? '', rows()));
-			const status = form.querySelector<HTMLElement>('[data-order-status]');
-			if (status) status.textContent = label.sent ?? '';
+			const message = orderMessage(label.greeting ?? '', rows());
+			const sent = () => {
+				const status = form.querySelector<HTMLElement>('[data-order-status]');
+				if (status) status.textContent = label.sent ?? '';
+			};
+			if (!hasOrderChoice()) {
+				openWhatsApp(message);
+				sent();
+				return;
+			}
+			const data = new FormData(form);
+			openOrderChoice({
+				order: {
+					packageCode: selectedPackage()?.dataset.code ?? '',
+					name: String(data.get('name')),
+					email: String(data.get('email')),
+					whatsapp: String(data.get('whatsapp')),
+					business: String(data.get('business')),
+					domain: `${domainName(String(data.get('domain')))}${data.get('extension') ?? ''}`,
+					notes: String(data.get('notes') ?? ''),
+					templateCode: /^\d{4}$/.test(code) ? code : '',
+				},
+				whatsappMessage: message,
+				onConsult: sent,
+			});
 		});
 	}
 </script>

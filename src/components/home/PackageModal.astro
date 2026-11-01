@@ -1,6 +1,7 @@
 ---
 import OrderFields from '../order/OrderFields.astro';
 import OrderConsent from '../order/OrderConsent.astro';
+import OrderChoiceDialog from '../order/OrderChoiceDialog.astro';
 import { content, type Locale } from '../../i18n/content';
 import { site } from '../../config/site';
 
@@ -55,19 +56,22 @@ const { modal: t, orderForm: f } = content[locale];
 			<OrderFields locale={locale} />
 			<OrderConsent locale={locale} />
 			<button class="order-submit" type="submit">
-				{f.submit} <span aria-hidden="true">↗</span>
+				{site.platformApiUrl ? f.continue : f.submit} <span aria-hidden="true">↗</span>
 			</button>
 			<p class="order-status" role="status" aria-live="polite"></p>
 		</form>
 	</div>
 </dialog>
+<OrderChoiceDialog locale={locale} />
 
 <script>
 	import { openWhatsApp } from '../../scripts/whatsapp';
 	import { domainName, orderMessage } from '../../scripts/order';
+	import { hasOrderChoice, openOrderChoice } from '../../scripts/order-choice';
 
 	interface SelectedPackage {
 		name: string;
+		code: string;
 		price: string;
 		tagline: string;
 		features: string[];
@@ -135,20 +139,40 @@ const { modal: t, orderForm: f } = content[locale];
 		if (!selected) return;
 		const data = new FormData(form);
 		const label = form.dataset;
-		openWhatsApp(
-			orderMessage(label.greeting ?? '', [
-				[label.packageLabel ?? '', selected.name],
-				[label.priceLabel ?? '', selected.price],
-				[label.nameLabel ?? '', String(data.get('name'))],
-				[label.businessLabel ?? '', String(data.get('business'))],
-				[label.domainLabel ?? '', `${domainName(String(data.get('domain')))}${data.get('extension') ?? ''}`],
-				[label.emailLabel ?? '', String(data.get('email'))],
-				[label.whatsappLabel ?? '', String(data.get('whatsapp'))],
-				[label.notesLabel ?? '', String(data.get('notes'))],
-			]),
-		);
-		const status = form.querySelector<HTMLElement>('.order-status');
-		if (status) status.textContent = label.sentStatus ?? '';
+		const domain = `${domainName(String(data.get('domain')))}${data.get('extension') ?? ''}`;
+		const message = orderMessage(label.greeting ?? '', [
+			[label.packageLabel ?? '', selected.name],
+			[label.priceLabel ?? '', selected.price],
+			[label.nameLabel ?? '', String(data.get('name'))],
+			[label.businessLabel ?? '', String(data.get('business'))],
+			[label.domainLabel ?? '', domain],
+			[label.emailLabel ?? '', String(data.get('email'))],
+			[label.whatsappLabel ?? '', String(data.get('whatsapp'))],
+			[label.notesLabel ?? '', String(data.get('notes'))],
+		]);
+		const sent = () => {
+			const status = form.querySelector<HTMLElement>('.order-status');
+			if (status) status.textContent = label.sentStatus ?? '';
+		};
+		if (!hasOrderChoice()) {
+			openWhatsApp(message);
+			sent();
+			return;
+		}
+		openOrderChoice({
+			order: {
+				packageCode: selected.code,
+				name: String(data.get('name')),
+				email: String(data.get('email')),
+				whatsapp: String(data.get('whatsapp')),
+				business: String(data.get('business')),
+				domain,
+				notes: String(data.get('notes') ?? ''),
+				templateCode: '',
+			},
+			whatsappMessage: message,
+			onConsult: sent,
+		});
 	});
 </script>
 

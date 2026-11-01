@@ -15,6 +15,7 @@ Setiap ADR mencatat **satu** keputusan teknis: konteks, keputusan, dan konsekuen
 | [0009](0009-disewain-shadcn-design-system.md) | Design system Disewain dengan primitive bergaya shadcn | Accepted |
 | [0010](0010-package-orders-via-whatsapp.md) | Pemesanan dan konsultasi lewat WhatsApp | Accepted |
 | [0011](0011-seo-metadata.md) | Metadata SEO, sitemap dan data terstruktur | Accepted |
+| [0012](0012-online-payment-through-platform.md) | Pembayaran online lewat Prasetya Platform | Proposed |
 
 ## Menulis ADR baru
 

@@ -1,0 +1,192 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import SiteHeader from '../layout/SiteHeader.astro';
+import SiteFooter from '../layout/SiteFooter.astro';
+import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
+import { homePath, orderStatusPath } from '../../data/templates';
+import { whatsappUrl } from '../../scripts/whatsapp';
+
+interface Props {
+	locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = content[locale].orderStatus;
+const alternates = { id: orderStatusPath('id'), en: orderStatusPath('en') };
+const helpMessage = t.helpMessage.replace('{site}', site.name);
+---
+
+<Layout lang={locale} title={`${t.metaTitle} — ${site.name}`} description={t.metaDescription} alternates={alternates} noindex>
+	<SiteHeader locale={locale} alternates={alternates} />
+
+	<main class="status-page" id="top">
+		<div class="status-card" id="order-status" data-locale={locale} data-en-path={orderStatusPath('en')} aria-live="polite">
+			<p class="status-eyebrow">{t.eyebrow}</p>
+
+			<section data-status-view="loading">
+				<h1>{t.loadingTitle}</h1>
+				<p>{t.loadingText}</p>
+			</section>
+			<section data-status-view="paid" hidden>
+				<h1>{t.paidTitle}</h1>
+				<p>{t.paidText}</p>
+			</section>
+			<section data-status-view="pending" hidden>
+				<h1>{t.pendingTitle}</h1>
+				<p>{t.pendingText}</p>
+				<a class="status-primary" href="#" data-status-resume hidden>
+					{t.continueAction}
+				</a>
+			</section>
+			<section data-status-view="retry" hidden>
+				<h1>{t.retryTitle}</h1>
+				<p>{t.retryText}</p>
+				<button class="status-primary" type="button" data-status-retry>
+					{t.retryAction}
+				</button>
+			</section>
+			<section data-status-view="closed" hidden>
+				<h1>{t.closedTitle}</h1>
+				<p>{t.closedText}</p>
+			</section>
+			<section data-status-view="error" hidden>
+				<h1>{t.errorTitle}</h1>
+				<p>{t.errorText}</p>
+			</section>
+
+			<p class="status-invoice" data-status-invoice-row hidden>
+				{t.invoice}: <strong data-status-invoice></strong>
+			</p>
+			<p class="status-note">{t.domainNote}</p>
+			<div class="status-actions">
+				<a
+					class="status-secondary"
+					href={whatsappUrl(helpMessage.replace('{invoice}', '-'))}
+					target="_blank"
+					rel="noopener"
+					data-status-help
+					data-message={helpMessage}
+				>
+					<i class="fa-brands fa-whatsapp" aria-hidden="true"></i>
+					{t.helpAction}
+				</a>
+				<a class="status-secondary" href={homePath(locale)}>
+					{t.backHome}
+				</a>
+			</div>
+		</div>
+	</main>
+
+	<SiteFooter locale={locale} home={homePath(locale)} />
+</Layout>
+
+<script>
+	import { initOrderStatus } from '../../scripts/order-status';
+
+	const root = document.querySelector<HTMLElement>('#order-status');
+	if (root) initOrderStatus(root);
+</script>
+
+<style>
+	.status-page {
+		min-height: 70vh;
+		padding: calc(var(--header-height) + clamp(2.5rem, 5vw, 4rem)) clamp(1.25rem, 4vw, 2rem) clamp(4rem, 7vw, 6rem);
+		background: var(--background);
+	}
+
+	.status-card {
+		max-width: 620px;
+		margin: auto;
+		padding: clamp(1.5rem, 4vw, 2.5rem);
+		background: var(--card);
+		border: 1px solid var(--border);
+		border-radius: var(--radius);
+	}
+
+	.status-eyebrow {
+		margin: 0 0 0.5rem;
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.status-card h1 {
+		margin: 0;
+		color: var(--foreground);
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 3vw, 2.2rem);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		line-height: 1.15;
+	}
+
+	.status-card section p {
+		margin: 0.7rem 0 1.25rem;
+		color: var(--muted);
+		font-size: 0.95rem;
+		line-height: 1.6;
+	}
+
+	.status-invoice {
+		margin: 0 0 0.85rem;
+		color: var(--foreground);
+		font-size: 0.92rem;
+	}
+
+	.status-note {
+		margin: 0 0 1.25rem;
+		padding: 0.8rem 1rem;
+		color: var(--foreground);
+		background: var(--secondary);
+		border-radius: 12px;
+		font-size: 0.85rem;
+		line-height: 1.55;
+	}
+
+	.status-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.6rem;
+	}
+
+	.status-primary,
+	.status-secondary {
+		min-height: 46px;
+		padding: 0.6rem 1.1rem;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		border-radius: var(--radius);
+		cursor: pointer;
+		font: inherit;
+		font-size: 0.9rem;
+		font-weight: 600;
+		text-decoration: none;
+	}
+
+	.status-primary {
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border: 1px solid var(--primary);
+	}
+
+	.status-primary[hidden] {
+		display: none;
+	}
+
+	.status-secondary {
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
+	}
+
+	.status-primary:focus-visible,
+	.status-secondary:focus-visible {
+		outline: 2px solid var(--primary);
+		outline-offset: 3px;
+	}
+</style>

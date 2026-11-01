@@ -1,6 +1,7 @@
 ---
 /** Required checkbox: the visitor agrees that the order is confirmed over WhatsApp. */
 import { content, type Locale } from '../../i18n/content';
+import { site } from '../../config/site';
 
 interface Props {
 	locale: Locale;
@@ -11,7 +12,7 @@ const t = content[Astro.props.locale].orderForm;
 
 <label class="order-consent">
 	<input name="consent" type="checkbox" required />
-	<span>{t.consent}</span>
+	<span>{site.platformApiUrl ? t.consentOnline : t.consent}</span>
 </label>
 
 <style>

@@ -123,3 +123,14 @@ Belum ada tes otomatis. Minimal lakukan:
 
 - File di luar kebutuhan website (aset brand, PDF, file ZIP kit) disimpan di luar repo, misalnya `~/Downloads/Prasetya Webworks - Brand Assets/`.
 - Kunci SSH, password, atau API key. Simpan sebagai GitHub Secret (lihat [deployment.md](deployment.md)).
+
+## Mencoba pembayaran online secara lokal
+
+Butuh `prasetya-platform` berjalan di `http://127.0.0.1:8000` dengan `PAYMENT_GATEWAY=fake` dan `DOKU_CALLBACK_URL_WEBWORKS=http://localhost:4321/order/status/`. Lalu di proyek ini:
+
+```sh
+cp .env.example .env   # isi PUBLIC_PLATFORM_API_URL=http://127.0.0.1:8000
+npm run dev
+```
+
+Jalankan di `localhost:4321`, karena origin itulah yang diizinkan CORS platform. Tanpa variabel ini situs berjalan seperti biasa dengan WhatsApp saja. Lihat ADR 0012.

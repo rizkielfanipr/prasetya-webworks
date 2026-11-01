@@ -124,6 +124,8 @@ export const content = {
 		packages: [
 			{
 				name: 'Landing Starter',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-LANDING-STARTER',
 				price: 'Rp499.000',
 				tagline: 'Untuk bisnis yang baru mulai hadir secara online.',
 				domains: ['.my.id', '.web.id'],
@@ -138,6 +140,8 @@ export const content = {
 			},
 			{
 				name: 'Landing Professional',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-LANDING-PROFESSIONAL',
 				price: 'Rp799.000',
 				tagline: 'Landing page untuk promosi dan menjaring calon pelanggan.',
 				domains: ['.my.id', '.web.id'],
@@ -154,6 +158,8 @@ export const content = {
 			},
 			{
 				name: 'Company Profile',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-COMPANY-PROFILE',
 				price: 'Rp1.999.000',
 				tagline: 'Untuk perusahaan yang membutuhkan website formal dan terpercaya.',
 				domains: ['.com', '.id'],
@@ -169,6 +175,8 @@ export const content = {
 			},
 			{
 				name: 'Business Website',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-BUSINESS-WEBSITE',
 				price: 'Rp2.999.000',
 				tagline: 'Untuk bisnis dengan konten dan fitur yang lebih luas.',
 				domains: ['.com', '.id'],
@@ -388,6 +396,48 @@ export const content = {
 			helpLink: 'Tanya via WhatsApp',
 			helpMessage: 'Halo {site}, saya ada pertanyaan sebelum memesan website.',
 		},
+		orderChoice: {
+			title: 'Mau konsultasi dulu atau langsung bayar?',
+			description: 'Keduanya bisa. Pesananmu tetap kami kerjakan dengan paket yang sama.',
+			totalLabel: 'Total pembayaran',
+			totalLoading: 'Memeriksa harga…',
+			consultTitle: 'Konsultasi dulu',
+			consultDescription: 'Kirim ringkasan pesanan lewat WhatsApp dan tanyakan apa saja. Pembayaran menyusul.',
+			consultAction: 'Lanjut ke WhatsApp',
+			payTitle: 'Langsung bayar',
+			payDescription: 'Bayar online lewat DOKU sekarang, lalu tim kami menghubungimu untuk langkah berikutnya.',
+			payAction: 'Bayar sekarang',
+			paying: 'Menyiapkan pembayaran…',
+			domainNote: 'Kalau domain pilihanmu ternyata tidak tersedia, kamu bisa memilih domain lain.',
+			close: 'Tutup',
+			errorInvalid: 'Periksa kembali nomor WhatsApp, email, dan data lainnya, lalu coba lagi.',
+			errorBusy: 'Pembayaran masih disiapkan. Tunggu sebentar lalu coba lagi.',
+			errorUnavailable: 'Pembayaran online sedang tidak tersedia. Silakan lanjut lewat WhatsApp.',
+		},
+		orderStatus: {
+			metaTitle: 'Status Pesanan',
+			metaDescription: 'Status pesanan dan pembayaran Prasetya Webworks.',
+			eyebrow: 'Status pesanan',
+			invoice: 'Invoice',
+			loadingTitle: 'Memeriksa pembayaran…',
+			loadingText: 'Mohon tunggu sebentar.',
+			paidTitle: 'Pembayaran diterima',
+			paidText: 'Terima kasih. Tim kami akan menghubungimu lewat WhatsApp untuk langkah berikutnya.',
+			pendingTitle: 'Menunggu pembayaran',
+			pendingText: 'Kami belum menerima konfirmasi pembayaran. Kalau kamu baru saja membayar, halaman ini diperbarui otomatis.',
+			continueAction: 'Lanjutkan pembayaran',
+			retryTitle: 'Pembayaran belum selesai',
+			retryText: 'Batas waktu pembayaran sudah lewat atau pembayaran belum berhasil. Kamu bisa mencoba lagi.',
+			retryAction: 'Bayar lagi',
+			closedTitle: 'Pesanan sudah tidak aktif',
+			closedText: 'Pesanan ini sudah kedaluwarsa atau dibatalkan. Hubungi kami kalau butuh bantuan.',
+			errorTitle: 'Status belum dapat ditampilkan',
+			errorText: 'Pesanan tidak ditemukan atau koneksi terganggu. Tidak ada pembayaran yang berubah.',
+			domainNote: 'Domain pilihanmu tidak tersedia atau ingin diganti? Kabari kami, kamu bisa memilih domain lain.',
+			helpAction: 'Hubungi kami di WhatsApp',
+			helpMessage: 'Halo {site}, saya ingin bertanya tentang pesanan {invoice}.',
+			backHome: 'Kembali ke beranda',
+		},
 		orderForm: {
 			domainChoice: 'Pilihan domain',
 			name: 'Nama pemesan',
@@ -402,7 +452,9 @@ export const content = {
 			optional: '(opsional)',
 			notesPlaceholder: 'Template pilihan, referensi, atau kebutuhan khusus',
 			consent: 'Saya mengerti pesanan akan dikonfirmasi melalui WhatsApp.',
+			consentOnline: 'Saya setuju data ini disimpan untuk memproses pesanan, dan tim akan menghubungi saya melalui WhatsApp.',
 			submit: 'Kirim pesanan via WhatsApp',
+			continue: 'Lanjutkan pesanan',
 			sent: 'WhatsApp sedang dibuka.',
 			summary: {
 				greeting: 'Halo {site}, saya ingin memesan:',
@@ -557,6 +609,8 @@ export const content = {
 		packages: [
 			{
 				name: 'Landing Starter',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-LANDING-STARTER',
 				price: 'Rp499.000',
 				tagline: 'For businesses just starting their online presence.',
 				domains: ['.my.id', '.web.id'],
@@ -571,6 +625,8 @@ export const content = {
 			},
 			{
 				name: 'Landing Professional',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-LANDING-PROFESSIONAL',
 				price: 'Rp799.000',
 				tagline: 'A landing page for promotions and capturing leads.',
 				domains: ['.my.id', '.web.id'],
@@ -587,6 +643,8 @@ export const content = {
 			},
 			{
 				name: 'Company Profile',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-COMPANY-PROFILE',
 				price: 'Rp1.999.000',
 				tagline: 'For companies that need a formal, trustworthy website.',
 				domains: ['.com', '.id'],
@@ -602,6 +660,8 @@ export const content = {
 			},
 			{
 				name: 'Business Website',
+				/* Platform package code: permanent, the platform decides the price. */
+				code: 'PW-BUSINESS-WEBSITE',
 				price: 'Rp2.999.000',
 				tagline: 'For businesses with broader content and features.',
 				domains: ['.com', '.id'],
@@ -819,6 +879,48 @@ export const content = {
 			helpLink: 'Ask on WhatsApp',
 			helpMessage: 'Hi {site}, I have a question before ordering a website.',
 		},
+		orderChoice: {
+			title: 'Talk to us first or pay right away?',
+			description: 'Either works. We build the same package for you.',
+			totalLabel: 'Total payment',
+			totalLoading: 'Checking the price…',
+			consultTitle: 'Talk to us first',
+			consultDescription: 'Send your order summary over WhatsApp and ask us anything. Payment comes later.',
+			consultAction: 'Continue to WhatsApp',
+			payTitle: 'Pay right away',
+			payDescription: 'Pay online through DOKU now, then our team contacts you about the next steps.',
+			payAction: 'Pay now',
+			paying: 'Preparing your payment…',
+			domainNote: 'If your preferred domain turns out to be unavailable, you can choose another one.',
+			close: 'Close',
+			errorInvalid: 'Please check your WhatsApp number, email and other details, then try again.',
+			errorBusy: 'Your payment is still being prepared. Wait a moment and try again.',
+			errorUnavailable: 'Online payment is unavailable right now. Please continue through WhatsApp.',
+		},
+		orderStatus: {
+			metaTitle: 'Order Status',
+			metaDescription: 'Prasetya Webworks order and payment status.',
+			eyebrow: 'Order status',
+			invoice: 'Invoice',
+			loadingTitle: 'Checking your payment…',
+			loadingText: 'Please wait a moment.',
+			paidTitle: 'Payment received',
+			paidText: 'Thank you. Our team will contact you on WhatsApp about the next steps.',
+			pendingTitle: 'Waiting for payment',
+			pendingText: 'We have not received a payment confirmation yet. If you just paid, this page updates automatically.',
+			continueAction: 'Continue payment',
+			retryTitle: 'Payment not completed',
+			retryText: 'The payment window has passed or the payment did not go through. You can try again.',
+			retryAction: 'Pay again',
+			closedTitle: 'This order is no longer active',
+			closedText: 'This order has expired or was cancelled. Contact us if you need help.',
+			errorTitle: 'We cannot show the status yet',
+			errorText: 'The order was not found or the connection failed. No payment has changed.',
+			domainNote: 'Is your preferred domain unavailable, or want to change it? Tell us and you can choose another domain.',
+			helpAction: 'Contact us on WhatsApp',
+			helpMessage: 'Hello {site}, I have a question about order {invoice}.',
+			backHome: 'Back to home',
+		},
 		orderForm: {
 			domainChoice: 'Domain choice',
 			name: 'Your name',
@@ -833,7 +935,9 @@ export const content = {
 			optional: '(optional)',
 			notesPlaceholder: 'Chosen template, references or special requirements',
 			consent: 'I understand my order will be confirmed via WhatsApp.',
+			consentOnline: 'I agree that these details are stored to process my order, and that the team will contact me on WhatsApp.',
 			submit: 'Send order via WhatsApp',
+			continue: 'Continue order',
 			sent: 'Opening WhatsApp.',
 			summary: {
 				greeting: 'Hi {site}, I would like to order:',

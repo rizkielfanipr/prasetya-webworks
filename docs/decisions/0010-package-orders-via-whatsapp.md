@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted — 24 Oktober 2026
+Accepted — 24 Oktober 2026. Tetap berlaku untuk pilihan konsultasi; pembayaran online ditambahkan oleh [ADR 0012](0012-online-payment-through-platform.md).
 
 ## Konteks
 

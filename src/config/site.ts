@@ -22,4 +22,6 @@ export const site = {
 	satamu: { url: 'https://satamu.prasetyawebworks.web.id', mark: '/images/satamu-mark.svg' },
 	/** WordPress Multisite that hosts the live template demos (see docs/wordpress-preview.md). */
 	previewBaseUrl: 'https://preview.prasetyawebworks.web.id',
+	/** Prasetya Platform API. Empty turns online payment off, leaving WhatsApp orders only (see ADR 0012). */
+	platformApiUrl: (import.meta.env.PUBLIC_PLATFORM_API_URL ?? '') as string,
 } as const;

@@ -40,6 +40,8 @@ export const catalogPath = (locale: Locale, category?: TemplateCategory, page = 
 /** Order form, optionally with a template already chosen. */
 export const orderPath = (locale: Locale, code?: string) => `${locale === 'id' ? '' : '/en'}/order/${code ? `?template=${code}` : ''}`;
 
+export const orderStatusPath = (locale: Locale) => `${locale === 'id' ? '' : '/en'}/order/status/`;
+
 export const CATALOG_PAGE_SIZE = 12;
 
 /** Everything the catalog search needs per template, in catalog order (served as /templates/search.json). */
