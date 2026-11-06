@@ -51,6 +51,7 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 				<form
 					class="order-card"
 					id="order-form"
+					novalidate
 					data-index-url="/templates/search.json"
 					data-categories={JSON.stringify(all.templateCategories)}
 					data-pages-label={all.templatesIntro.pages}
@@ -262,6 +263,15 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 			return !invalid;
 		}
 
+		// The form is novalidate because the browser cannot point at a field in a hidden step and would block the
+		// submit silently, e.g. when the domain turns out taken after the extension changes in the last step.
+		const firstInvalidStep = () =>
+			steps.findIndex((step) =>
+				Array.from(step.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('input, textarea')).some(
+					(field) => !field.checkValidity(),
+				),
+			);
+
 		form.querySelectorAll('[data-step-next]').forEach((button) =>
 			button.addEventListener('click', () => {
 				if (stepIsValid()) show(current + 1);
@@ -355,6 +365,12 @@ const alternates = { id: orderPath('id'), en: orderPath('en') };
 		form.addEventListener('submit', (event) => {
 			event.preventDefault();
 			if (!stepIsValid()) return;
+			const invalidStep = firstInvalidStep();
+			if (invalidStep !== -1) {
+				show(invalidStep);
+				stepIsValid();
+				return;
+			}
 			const message = orderMessage(label.greeting ?? '', rows());
 			const sent = () => {
 				const status = form.querySelector<HTMLElement>('[data-order-status]');

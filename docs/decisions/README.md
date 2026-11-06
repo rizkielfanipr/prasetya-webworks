@@ -16,6 +16,7 @@ Setiap ADR mencatat **satu** keputusan teknis: konteks, keputusan, dan konsekuen
 | [0010](0010-package-orders-via-whatsapp.md) | Pemesanan dan konsultasi lewat WhatsApp | Accepted |
 | [0011](0011-seo-metadata.md) | Metadata SEO, sitemap dan data terstruktur | Accepted |
 | [0012](0012-online-payment-through-platform.md) | Pembayaran online lewat Prasetya Platform | Proposed |
+| [0013](0013-domain-availability-via-rdap.md) | Cek ketersediaan domain lewat RDAP | Accepted |
 
 ## Menulis ADR baru
 

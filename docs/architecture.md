@@ -37,6 +37,7 @@ src/
 │   ├── carousel.ts               initCarousel(): carousel hero (10 detik per slide, panah, titik, swipe, keyboard, jeda)
 │   ├── satamu-float.ts           initSatamuFloat(): balon ajakan Satamu (muncul tertunda, bisa ditutup per sesi, hilang saat footer terlihat)
 │   ├── whatsapp.ts               whatsappUrl() / openWhatsApp(): tautan dan pembuka chat WhatsApp bisnis dengan pesan siap kirim
+│   ├── domain-check.ts           domainAvailability(): cek domain sudah dipakai atau belum lewat RDAP (ADR 0013)
 ├── components/
 │   ├── layout/                   Dipakai semua halaman
 │   │   ├── SiteHeader.astro      Header + navigasi + menu mobile + pemilih bahasa
@@ -128,6 +129,7 @@ live-previews ───┘                    lalu (untuk "Semua") diselang-seli
 3. **Paket:** tombol di `PricingSection` membawa detail paket sebagai JSON di `data-package` (nama, harga, fasilitas, ekstensi domain, revisi, estimasi). `PackageModal` membacanya, menampilkan ringkasan dan pilihan domain di kiri, lalu form pemesanan di kanan.
 4. **Modal paket** mengirim ringkasan pesanan lewat `openWhatsApp()` ke nomor `site.whatsapp` (lihat [ADR 0010](decisions/0010-package-orders-via-whatsapp.md)). Label ringkasan diambil dari atribut `data-*` pada form.
 5. Tidak ada form kontak maupun backend form; semua kontak masuk lewat WhatsApp.
+6. **Cek domain:** `OrderFields` (dipakai modal dan `/order/`) mengecek nama domain dan ekstensinya lewat RDAP saat pengunjung berhenti mengetik atau mengganti ekstensi. Domain yang sudah dipakai memblokir kirim. Kalau pengecekan gagal, pesanan tetap bisa dikirim (lihat [ADR 0013](decisions/0013-domain-availability-via-rdap.md)).
 
 ## Gaya (CSS)
 

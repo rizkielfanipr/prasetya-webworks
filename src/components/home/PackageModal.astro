@@ -10,7 +10,7 @@ interface Props {
 }
 
 const { locale } = Astro.props;
-const { modal: t, orderForm: f } = content[locale];
+const { modal: t, orderForm: f, pricingIntro: p } = content[locale];
 ---
 
 <dialog class="package-modal" id="package-modal" aria-labelledby="package-modal-title">
@@ -18,23 +18,33 @@ const { modal: t, orderForm: f } = content[locale];
 		<button class="modal-close" type="button" data-modal-close aria-label={t.close}>
 			×
 		</button>
+		{/* Mirrors the popular pricing card in PricingSection so the choice reads as the same card. */}
 		<section class="package-summary" aria-label={t.detail}>
+			<p class="summary-badge">{t.selected}</p>
 			<h2 id="package-modal-title" data-modal-package-name></h2>
-			<p class="package-summary-price" data-modal-package-price></p>
-			<p class="package-summary-copy" data-modal-package-tagline></p>
-			<div class="summary-divider"></div>
+			<p class="summary-tagline" data-modal-package-tagline></p>
+			<p class="summary-price" data-modal-package-price></p>
 			<p class="summary-title">{t.included}</p>
-			<ul data-modal-package-features></ul>
+			<ul class="summary-features" data-modal-package-features></ul>
+			<dl class="summary-meta">
+				<div>
+					<dt>{p.revisions}</dt>
+					<dd data-modal-revisions></dd>
+				</div>
+				<div>
+					<dt>{p.estimate}</dt>
+					<dd data-modal-estimate></dd>
+				</div>
+			</dl>
 			{/* Radios live here but belong to the order form through the form attribute. */}
 			<fieldset class="domain-choice">
 				<legend class="summary-title">{f.domainChoice}</legend>
 				<div class="domain-options" data-modal-domains></div>
 			</fieldset>
 			<ul class="summary-notes">
-				<li>{t.hosting}</li>
 				<li>{t.renewal}</li>
-				<li data-modal-revisions data-template={t.revisions}></li>
-				<li data-modal-estimate data-template={t.estimate}></li>
+				<li>{t.revisions}</li>
+				<li>{t.estimate}</li>
 			</ul>
 		</section>
 		<form
@@ -111,8 +121,8 @@ const { modal: t, orderForm: f } = content[locale];
 			if (name) name.textContent = selected.name;
 			if (price) price.textContent = selected.price;
 			if (tagline) tagline.textContent = selected.tagline;
-			if (revisions) revisions.textContent = (revisions.dataset.template ?? '').replace('{count}', selected.revisions);
-			if (estimate) estimate.textContent = (estimate.dataset.template ?? '').replace('{estimate}', selected.estimate);
+			if (revisions) revisions.textContent = selected.revisions;
+			if (estimate) estimate.textContent = selected.estimate;
 			if (suffix) suffix.textContent = selected.domains[0] ?? '';
 			domains?.replaceChildren(...selected.domains.map((extension, index) => domainOption(extension, index === 0)));
 			features?.replaceChildren(
@@ -196,13 +206,13 @@ const { modal: t, orderForm: f } = content[locale];
 
 	.package-modal-shell {
 		position: relative;
-		min-height: 610px;
 		display: grid;
-		grid-template-columns: 0.88fr 1.12fr;
+		grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
 		overflow: hidden;
-		background: var(--paper);
-		border: 1px solid rgba(255, 255, 255, 0.35);
+		background: var(--card);
+		border: 1px solid var(--primary);
 		border-radius: var(--radius);
+		box-shadow: 0 0 0 1px var(--primary);
 	}
 
 	.modal-close {
@@ -214,14 +224,17 @@ const { modal: t, orderForm: f } = content[locale];
 		height: 38px;
 		display: grid;
 		place-items: center;
-		color: var(--ink);
-		background: rgba(255, 255, 255, 0.82);
-		border: 1px solid rgba(17, 19, 26, 0.12);
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--border);
 		border-radius: 50%;
 		cursor: pointer;
 		font-size: 1.25rem;
 		line-height: 1;
-		backdrop-filter: blur(8px);
+	}
+
+	.modal-close:hover {
+		border-color: var(--primary);
 	}
 
 	.modal-close:focus-visible {
@@ -229,91 +242,126 @@ const { modal: t, orderForm: f } = content[locale];
 		outline-offset: 2px;
 	}
 
+	/* Same surface, type scale and list style as `.pricing-card.popular`. */
 	.package-summary {
-		padding: clamp(2.2rem, 4vw, 4rem);
-		color: var(--foreground);
-		background:
-			radial-gradient(circle at 12% 82%, rgba(255, 81, 0, 0.2), transparent 34%),
-			linear-gradient(150deg, #fff3ea 0%, #ffe2cf 70%, #ffd1b4 100%);
+		padding: clamp(1.6rem, 3vw, 2.4rem);
+		display: flex;
+		flex-direction: column;
+		color: var(--ink);
+		background: linear-gradient(180deg, var(--secondary) 0%, var(--card) 55%);
+		border-right: 1px solid var(--border);
+	}
+
+	.summary-badge {
+		align-self: flex-start;
+		margin: 0 0 1rem;
+		padding: 0.3rem 0.75rem;
+		color: var(--primary-foreground);
+		background: var(--primary);
+		border-radius: 8px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		line-height: 1.33;
+		text-transform: uppercase;
 	}
 
 	.package-summary h2,
 	.package-order-form h2 {
 		margin: 0;
-		font-family: var(--font-serif);
-		font-weight: 400;
-		letter-spacing: -0.04em;
+		font-family: var(--font-display);
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		line-height: 1.25;
 	}
 
 	.package-summary h2 {
-		font-size: clamp(2.2rem, 3.6vw, 3.4rem);
-		line-height: 1.05;
+		font-size: clamp(1.5rem, 2.2vw, 1.75rem);
 	}
 
-	.package-summary-price {
-		margin: 0.9rem 0 0;
-		color: var(--primary);
+	.summary-tagline {
+		margin: 0.5rem 0 0;
+		color: var(--muted);
+		font-size: 0.875rem;
+		line-height: 1.6;
+	}
+
+	.summary-price {
+		margin: 1.25rem 0 0;
+		padding-bottom: 1.25rem;
+		color: var(--foreground);
+		border-bottom: 1px solid var(--border);
 		font-family: var(--font-display);
-		font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+		font-size: clamp(1.75rem, 2.6vw, 2.2rem);
 		font-weight: 700;
 		letter-spacing: -0.03em;
 		line-height: 1.1;
 	}
 
-	.package-summary-copy {
-		max-width: 400px;
-		margin: 0.8rem 0 0;
-		color: var(--muted);
-		font-size: 0.84rem;
-		line-height: 1.65;
-	}
-
-	.summary-divider {
-		height: 1px;
-		margin: 1.8rem 0 1.5rem;
-		background: rgba(255, 81, 0, 0.18);
-	}
-
 	.summary-title {
-		margin: 0 0 1rem;
+		margin: 1.25rem 0 0.75rem;
+		padding: 0;
 		color: var(--muted);
-		font-size: 0.78rem;
+		font-size: 0.68rem;
 		font-weight: 600;
+		letter-spacing: 0.08em;
 		line-height: 1.5;
+		text-transform: uppercase;
 	}
 
-	.package-summary ul {
+	.summary-features {
 		margin: 0;
 		padding: 0;
 		display: grid;
-		gap: 0.95rem;
+		gap: 0.75rem;
 		list-style: none;
-		font-size: 0.77rem;
+		font-size: 0.875rem;
+		line-height: 1.45;
 	}
 
 	/* Feature items are created by the script below, so they need :global to get styles. */
-	.package-summary :global(li) {
+	.summary-features :global(li) {
 		display: flex;
-		gap: 0.75rem;
-		align-items: flex-start;
+		gap: 0.65rem;
 	}
 
-	.package-summary :global(li span) {
-		width: 19px;
-		height: 19px;
+	.summary-features :global(li span) {
+		color: var(--primary);
+		font-weight: 700;
+	}
+
+	.summary-meta {
+		margin: 1.25rem 0 0;
+		padding: 0.85rem 1rem;
 		display: grid;
-		place-items: center;
-		flex: 0 0 19px;
-		color: var(--blue-deep);
-		background: #fff;
-		border-radius: 50%;
-		font-size: 0.58rem;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 0.75rem;
+		background: var(--background);
+		border-radius: 12px;
+	}
+
+	.summary-meta dt {
+		color: var(--muted);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.summary-meta dd {
+		margin: 0.15rem 0 0;
+		color: var(--foreground);
+		font-size: 0.9rem;
+		font-weight: 700;
 	}
 
 	.domain-choice {
-		margin: 1.8rem 0 0;
+		margin: 1.25rem 0 0;
 		padding: 0;
 		border: 0;
+	}
+
+	/* A legend ignores its top margin inside the fieldset, so the fieldset carries the gap. */
+	.domain-choice legend {
+		margin-top: 0;
 	}
 
 	.domain-options {
@@ -323,8 +371,8 @@ const { modal: t, orderForm: f } = content[locale];
 	}
 
 	.domain-options :global(label) {
-		min-height: 36px;
-		padding: 0.45rem 0.9rem;
+		min-height: 42px;
+		padding: 0.5rem 1rem;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.5rem;
@@ -333,11 +381,17 @@ const { modal: t, orderForm: f } = content[locale];
 		border: 1px solid var(--border);
 		border-radius: 12px;
 		cursor: pointer;
-		font-size: 0.78rem;
+		font-size: 0.875rem;
 		font-weight: 600;
+		transition: border-color 0.2s ease;
+	}
+
+	.domain-options :global(label:hover) {
+		border-color: rgba(255, 81, 0, 0.45);
 	}
 
 	.domain-options :global(label:has(input:checked)) {
+		background: var(--secondary);
 		border-color: var(--primary);
 		box-shadow: 0 0 0 1px var(--primary);
 	}
@@ -347,62 +401,64 @@ const { modal: t, orderForm: f } = content[locale];
 		accent-color: var(--primary);
 	}
 
-	.package-summary .summary-notes {
-		margin: 1.8rem 0 0;
-		padding: 1.3rem 0 0 1rem;
+	.summary-notes {
+		margin: auto 0 0;
+		padding: 1.5rem 0 0 1rem;
 		display: grid;
-		gap: 0.45rem;
+		gap: 0.4rem;
 		color: var(--muted);
-		border-top: 1px solid rgba(255, 81, 0, 0.18);
-		list-style: disc;
-		font-size: 0.7rem;
+		font-size: 0.75rem;
 		line-height: 1.6;
-	}
-
-	.package-summary .summary-notes li {
-		display: list-item;
 	}
 
 	.package-order-form {
-		padding: clamp(2.3rem, 4vw, 4rem);
+		padding: clamp(1.6rem, 3vw, 2.4rem);
 		display: flex;
 		flex-direction: column;
-		background: linear-gradient(145deg, #ffffff, #fffaf4);
+		background: var(--card);
 	}
 
 	.package-order-form h2 {
-		padding-right: 2rem;
-		font-size: clamp(2rem, 3vw, 3.1rem);
-		line-height: 1;
+		padding-right: 2.5rem;
+		font-size: clamp(1.5rem, 2.2vw, 1.75rem);
 	}
 
 	.package-order-form > p:not(.order-status) {
-		max-width: 500px;
-		margin: 0.9rem 0 1.8rem;
+		margin: 0.5rem 0 1.25rem;
+		padding-bottom: 1.25rem;
 		color: var(--muted);
-		font-size: 0.76rem;
+		border-bottom: 1px solid var(--border);
+		font-size: 0.875rem;
 		line-height: 1.6;
 	}
 
+	/* Same colours as the popular card's button, sized up as the form's main action. */
 	.order-submit {
-		margin-top: 0.2rem;
-		padding: 0.9rem 1.05rem;
+		width: 100%;
+		min-height: 50px;
+		margin-top: 0.25rem;
+		padding: 0.85rem 1.1rem;
 		display: flex;
-		justify-content: space-between;
+		align-items: center;
+		justify-content: center;
+		gap: 0.6rem;
 		color: var(--primary-foreground);
-		background: var(--blue);
-		border: 0;
-		border-radius: var(--radius);
+		background: var(--primary);
+		border: 1px solid var(--primary);
+		border-radius: 12px;
 		box-shadow: var(--brand-shadow);
 		cursor: pointer;
-		font-size: 0.59rem;
-		font-weight: 700;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
+		font-size: 0.95rem;
+		font-weight: 600;
+		transition: background 0.2s ease;
+	}
+
+	.order-submit:hover {
+		background: var(--blue-hover);
 	}
 
 	.order-submit:focus-visible {
-		outline: 2px solid var(--blue-deep);
+		outline: 2px solid var(--blue);
 		outline-offset: 3px;
 	}
 
@@ -416,14 +472,19 @@ const { modal: t, orderForm: f } = content[locale];
 
 	.order-status {
 		min-height: 1rem;
-		margin: 0.65rem 0 0;
+		margin: 0.75rem 0 0;
 		color: var(--muted);
-		font-size: 0.65rem;
+		font-size: 0.8rem;
 	}
 
 	@media (max-width: 1000px) {
 		.package-modal-shell {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
+		}
+
+		.package-summary {
+			border-right: 0;
+			border-bottom: 1px solid var(--border);
 		}
 	}
 
@@ -431,21 +492,13 @@ const { modal: t, orderForm: f } = content[locale];
 		.package-modal {
 			width: calc(100% - 1rem);
 			max-height: calc(100dvh - 1rem);
-			border-radius: 20px;
 		}
-		.package-modal-shell {
-			border-radius: 20px;
-		}
+
 		.package-summary,
 		.package-order-form {
-			padding: 2rem 1.25rem;
+			padding: 1.4rem 1.25rem;
 		}
-		.package-summary h2 {
-			font-size: 2.1rem;
-		}
-		.package-order-form h2 {
-			font-size: 2rem;
-		}
+
 		.modal-close {
 			top: 0.7rem;
 			right: 0.7rem;
@@ -453,7 +506,9 @@ const { modal: t, orderForm: f } = content[locale];
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.order-submit span {
+		.order-submit,
+		.order-submit span,
+		.domain-options :global(label) {
 			animation: none !important;
 			transition: none !important;
 		}

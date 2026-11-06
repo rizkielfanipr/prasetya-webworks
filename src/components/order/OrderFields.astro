@@ -2,7 +2,7 @@
 /**
  * Customer fields of an order: name, WhatsApp, email, business, preferred domain and notes.
  * The domain extension is chosen elsewhere (radios named "extension"); the parent's script
- * writes it into [data-domain-suffix].
+ * writes it into [data-domain-suffix], and the domain is checked whenever either part changes.
  */
 import { content, type Locale } from '../../i18n/content';
 
@@ -47,6 +47,17 @@ const t = content[Astro.props.locale].orderForm;
 			<span aria-hidden="true" data-domain-suffix></span>
 		</span>
 	</label>
+	{/* Filled by the script below once the visitor stops typing or changes the extension. */}
+	<p
+		class="domain-status"
+		aria-live="polite"
+		data-domain-status
+		data-checking={t.domainStatus.checking}
+		data-available={t.domainStatus.available}
+		data-taken={t.domainStatus.taken}
+		data-invalid={t.domainStatus.invalid}
+		data-unknown={t.domainStatus.unknown}
+	></p>
 	<label>
 		<span class="label-text">
 			{t.notes} <span>{t.optional}</span>
@@ -55,15 +66,60 @@ const t = content[Astro.props.locale].orderForm;
 	</label>
 </div>
 
+<script>
+	import { domainName } from '../../scripts/order';
+	import { domainAvailability, validDomainName, type DomainAvailability } from '../../scripts/domain-check';
+
+	type Shown = DomainAvailability | 'checking' | '';
+
+	document.querySelectorAll<HTMLElement>('.order-fields').forEach((fields) => {
+		const input = fields.querySelector<HTMLInputElement>('input[name="domain"]');
+		const suffix = fields.querySelector<HTMLElement>('[data-domain-suffix]');
+		const status = fields.querySelector<HTMLElement>('[data-domain-status]');
+		if (!input || !suffix || !status) return;
+		let timer: number | undefined;
+		let controller: AbortController | undefined;
+
+		const show = (state: Shown, domain = '') => {
+			status.dataset.state = state;
+			status.textContent = state ? (status.dataset[state] ?? '').replace('{domain}', domain) : '';
+			// A taken or malformed name blocks submitting; an unchecked one does not, so a registry outage never loses an order.
+			input.setCustomValidity(state === 'taken' || state === 'invalid' ? status.textContent : '');
+		};
+
+		const check = () => {
+			window.clearTimeout(timer);
+			controller?.abort();
+			const name = domainName(input.value);
+			const extension = suffix.textContent?.trim() ?? '';
+			if (!name || !extension) return show('');
+			if (!validDomainName(name)) return show('invalid');
+			const domain = `${name}${extension}`;
+			show('checking', domain);
+			timer = window.setTimeout(() => {
+				const current = new AbortController();
+				controller = current;
+				domainAvailability(name, extension, current.signal)
+					.then((result) => show(result, domain))
+					.catch(() => undefined); // Aborted: a newer check is already running.
+			}, 500);
+		};
+
+		input.addEventListener('input', check);
+		// The parent rewrites the suffix when the extension or the package changes.
+		new MutationObserver(check).observe(suffix, { childList: true, characterData: true, subtree: true });
+	});
+</script>
+
 <style>
 	.order-fields label {
-		margin-bottom: 0.85rem;
+		margin-bottom: 1rem;
 		display: grid;
-		gap: 0.42rem;
-		color: var(--ink);
-		font-size: 0.61rem;
-		font-weight: 700;
-		letter-spacing: 0.035em;
+		gap: 0.4rem;
+		color: var(--foreground);
+		font-size: 0.8rem;
+		font-weight: 600;
+		line-height: 1.4;
 	}
 
 	.label-text > span {
@@ -71,35 +127,60 @@ const t = content[Astro.props.locale].orderForm;
 		font-weight: 400;
 	}
 
+	/* Inputs sit inside their label, so reset the label's weight instead of inheriting it. */
 	.order-fields input,
 	.order-fields textarea {
 		width: 100%;
-		padding: 0.8rem 0.85rem;
-		color: var(--ink);
-		background: rgba(255, 255, 255, 0.75);
-		border: 1px solid var(--line);
+		min-height: 46px;
+		padding: 0.7rem 0.9rem;
+		color: var(--foreground);
+		background: var(--card);
+		border: 1px solid var(--input);
 		border-radius: 12px;
 		outline: none;
-		font-size: 0.76rem;
+		font-size: 0.9rem;
+		font-weight: 400;
+		line-height: 1.5;
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+
+	.order-fields textarea {
+		resize: vertical;
+	}
+
+	.order-fields input::placeholder,
+	.order-fields textarea::placeholder {
+		color: #a39a93;
+	}
+
+	.order-fields input:hover,
+	.order-fields textarea:hover,
+	.domain-input:hover {
+		border-color: #cfc4bb;
 	}
 
 	.order-fields input:focus,
 	.order-fields textarea:focus {
-		border-color: var(--blue);
-		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+		border-color: var(--ring);
+		box-shadow: 0 0 0 3px rgba(255, 81, 0, 0.12);
 	}
 
 	.domain-input {
 		display: flex;
 		align-items: stretch;
-		background: rgba(255, 255, 255, 0.75);
-		border: 1px solid var(--line);
+		background: var(--card);
+		border: 1px solid var(--input);
 		border-radius: 12px;
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
 	}
 
 	.domain-input:focus-within {
-		border-color: var(--blue);
-		box-shadow: 0 0 0 2px rgba(255, 81, 0, 0.14);
+		border-color: var(--ring);
+		box-shadow: 0 0 0 3px rgba(255, 81, 0, 0.12);
 	}
 
 	.order-fields .domain-input input {
@@ -114,8 +195,43 @@ const t = content[Astro.props.locale].orderForm;
 		display: flex;
 		align-items: center;
 		color: var(--muted);
-		border-left: 1px solid var(--line);
-		font-size: 0.76rem;
-		font-weight: 600;
+		background: var(--background);
+		border-left: 1px solid var(--input);
+		border-radius: 0 11px 11px 0;
+		font-size: 0.9rem;
+		font-weight: 500;
+	}
+
+	.domain-status {
+		margin: -0.6rem 0 1rem;
+		color: var(--muted);
+		font-size: 0.78rem;
+		line-height: 1.5;
+	}
+
+	.domain-status:empty {
+		display: none;
+	}
+
+	.domain-status[data-state='available'] {
+		color: var(--success);
+	}
+
+	.domain-status[data-state='taken'],
+	.domain-status[data-state='invalid'] {
+		color: var(--destructive);
+	}
+
+	.order-fields:has(.domain-status[data-state='taken']) .domain-input,
+	.order-fields:has(.domain-status[data-state='invalid']) .domain-input {
+		border-color: var(--destructive);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.order-fields input,
+		.order-fields textarea,
+		.domain-input {
+			transition: none;
+		}
 	}
 </style>
