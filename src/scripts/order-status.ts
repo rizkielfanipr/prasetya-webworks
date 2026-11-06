@@ -6,7 +6,7 @@ type View = 'loading' | 'paid' | 'pending' | 'retry' | 'closed' | 'error';
 const POLL_MS = 5000;
 const POLL_LIMIT = 36; // Three minutes, then the visitor can refresh.
 
-/** Only ever shows what the platform reports. Arriving back from DOKU proves nothing, see ADR 0012. */
+/** Only ever shows what the platform reports. Arriving back from the gateway proves nothing, see ADR 0012. */
 export function initOrderStatus(root: HTMLElement) {
 	const reference = new URLSearchParams(window.location.search).get('order') ?? '';
 	const invoice = root.querySelector<HTMLElement>('[data-status-invoice]');

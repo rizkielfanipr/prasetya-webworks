@@ -126,7 +126,7 @@ Belum ada tes otomatis. Minimal lakukan:
 
 ## Mencoba pembayaran online secara lokal
 
-Butuh `prasetya-platform` berjalan di `http://127.0.0.1:8000` dengan `PAYMENT_GATEWAY=fake` dan `DOKU_CALLBACK_URL_WEBWORKS=http://localhost:4321/order/status/`. Lalu di proyek ini:
+Butuh `prasetya-platform` berjalan di `http://127.0.0.1:8000` dengan `PAYMENT_GATEWAY=fake` dan `PAYMENT_RETURN_URL_WEBWORKS=http://localhost:4321/order/status/`. Lalu di proyek ini:
 
 ```sh
 cp .env.example .env   # isi PUBLIC_PLATFORM_API_URL=http://127.0.0.1:8000

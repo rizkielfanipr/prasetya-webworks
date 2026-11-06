@@ -141,5 +141,5 @@ export async function paymentStatus(reference: string): Promise<PaymentStatus> {
 	return body.data;
 }
 
-/** Locale the customer left in. DOKU returns everyone to one URL, so English customers are sent back to their page. */
+/** Locale the customer left in. The gateway returns everyone to one URL, so English customers are sent back to their page. */
 export const checkoutLocale = () => sessionStorage.getItem(LOCALE_KEY);

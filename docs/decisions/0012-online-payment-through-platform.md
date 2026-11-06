@@ -6,7 +6,7 @@ Proposed — 1 November 2026
 
 ## Konteks
 
-ADR 0010 mengarahkan semua pesanan ke WhatsApp karena situs ini statis dan tidak punya backend. Prasetya Platform kini menyediakan API pesanan dan pembayaran DOKU. Pemilik ingin pelanggan tetap bisa konsultasi dulu, tetapi juga bisa langsung bayar dari situs.
+ADR 0010 mengarahkan semua pesanan ke WhatsApp karena situs ini statis dan tidak punya backend. Prasetya Platform kini menyediakan API pesanan dan pembayaran Duitku. Pemilik ingin pelanggan tetap bisa konsultasi dulu, tetapi juga bisa langsung bayar dari situs.
 
 ## Keputusan
 
